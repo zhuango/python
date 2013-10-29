@@ -1,0 +1,4 @@
+#!/usr/bin/python
+for item in ['Liu', 'Zhuang', 'is', 'a', 'good', 'boy']:
+	print item ,
+#print
