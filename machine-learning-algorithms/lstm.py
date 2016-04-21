@@ -17,7 +17,7 @@ from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 import imdb
 
-datasets = {'imdb': (imdb.load_data, imdb.prepare_data)}
+datasets = {'imdb': (imdb.load_data, imdb.prepare_data)} # dictionary key(string) -> value( tuple(two functions) )
 
 # Set the random number generators' seeds for consistency
 SEED = 123
@@ -25,7 +25,7 @@ numpy.random.seed(SEED)
 
 
 def numpy_floatX(data):
-    return numpy.asarray(data, dtype=config.floatX)
+    return numpy.asarray(data, dtype=config.floatX) #the "config.floatX" is theano config
 
 
 def get_minibatches_idx(n, minibatch_size, shuffle=False):
@@ -482,10 +482,13 @@ def train_lstm(
     load_data, prepare_data = get_dataset(dataset)
 
     print('Loading data')
+    # train is a tuple which has two elements.
+    # train[0] is a matrix(2,2)
+    # train[1] is a list(elements are type of int)
     train, valid, test = load_data(n_words=n_words, valid_portion=0.05,
                                    maxlen=maxlen)
     print("#########################")
-    print(train[0][0])
+    print(type(train[0][0][0]))
     print("#########################")
 
     if test_size > 0:
