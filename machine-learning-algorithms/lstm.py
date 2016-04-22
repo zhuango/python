@@ -375,8 +375,8 @@ def build_model(tparams, options):
     mask = tensor.matrix('mask', dtype=config.floatX)
     y = tensor.vector('y', dtype='int64')
 
-    n_timesteps = x.shape[0]
-    n_samples = x.shape[1]
+    n_timesteps = x.shape[0] # the number of row.
+    n_samples = x.shape[1] # the number of colum.
 
     emb = tparams['Wemb'][x.flatten()].reshape([n_timesteps,
                                                 n_samples,
