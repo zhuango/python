@@ -52,3 +52,7 @@ print(x2)# array([7, 7, 4, 2])
 x3 = x[np.array([[1,1],[2,3]])]
 print(x3) # array([[9, 9],
           #        [8, 7]])
+          
+# To disable this behaviour and force NumPy to print the entire array,
+# you can change the printing options using set_printoptions.
+np.set_printoptions(threshold='nan')
