@@ -6,3 +6,5 @@ def myfunction():
     pass
     
 print(myfunction.__doc__)
+
+import os 
