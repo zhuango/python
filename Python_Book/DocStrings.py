@@ -8,3 +8,4 @@ def myfunction():
 print(myfunction.__doc__)
 
 import os 
+os.path.dirname
