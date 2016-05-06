@@ -2,6 +2,7 @@ import argparse
 import numpy
 
 lengthOfFragment = 5
+
 def generate(wordslist, vectorsDict, dimension):
     parser = argparse.ArgumentParser()
     parser.add_argument('--vo', default=wordslist, type=str)
@@ -51,7 +52,26 @@ def generate(wordslist, vectorsDict, dimension):
                         fragmentVector = fragmentVector + str(elem) + " "
             vecfile.writelines(fragmentVector + "\n")
     print("There are " + str(notFoundCount) + " words witch are not found.")
+    
+    
+from multiprocessing import Process
+import os
+import time
+
 if __name__ == "__main__":
-    vectorsDict = "C:\Users\liuz\Desktop\cnn\cn\glove.twitter.27B.50d.txt"
-    wordslist = "C:\Users\liuz\Desktop\cnn\cn\label_book_new.txt.extract"
-    generate("", "", 25)
+
+    classes = ["book", "music", "dvd"]
+    wordDimensions = [50, 100]
+    languages = ["en", "cn"]
+    
+    corpusPath = "G:\\liuzhuang\\corpus\\"
+    cnnOutputPath = "G:\\liuzhuang\\corpus\\cnn_output\\"
+
+    for clas in classes:
+        for wordDimension in wordDimensions:
+            for language in languages:
+                vectorsDict = corpusPath + "\\"+language+"_vectorTable\\"+language+"_vectors_"+ str(wordDimension) +".txt"
+                wordslist = corpusPath + language + "\\test_"+clas+"_new.txt.extract"
+                p = Process(target=generate, args=(wordslist, vectorsDict, wordDimension))
+                p.start()
+                print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))

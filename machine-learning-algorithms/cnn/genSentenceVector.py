@@ -1,7 +1,7 @@
 import numpy
 import argparse
 
-def genSectenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, dimension):
+def genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, dimension):
 
     psnumber = open(numberFile,"r")
     fragmentVectors = open(fragmentVectorFile, "r")
@@ -45,8 +45,9 @@ def genSectenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorF
     print(str(fragNumber) + "\n" + indexFile + "\n" + sentenceVectorFile + " done.\n")        
 
 import os
-from mutiprocess import Process
+from multiprocessing import Process
 if __name__ == "__main__":
+#def genSen():
     mDimension = 50
     classes = ["book", "music", "dvd"]
     wordDimensions = [50, 100]
@@ -57,9 +58,9 @@ if __name__ == "__main__":
     for clas in classes:
         for wordDimension in wordDimensions:
             for language in languages:
-                numberFile = corpusPath+language+"\\label_"+clas+"_new.txt.number"
+                numberFile = corpusPath+language+"\\test_"+clas+"_new.txt.number"
                 fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\"+clas+"_output_50.txt"
-                indexFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "label_"+clas+"_new.txt.index"
-                sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "label_"+clas+"_new.txt.sent"
+                indexFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "test_"+clas+"_new.txt.index"
+                sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "test_"+clas+"_new.txt.sent"
                 
-                genSectenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, mDimension)
+                genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, mDimension)
