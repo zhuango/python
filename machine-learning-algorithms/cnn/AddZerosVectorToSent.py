@@ -48,8 +48,8 @@ def AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexF
     number.close()
     newSent.close()
     newindex.close()
-    print(newSentFile + "\n" + newindexFile " done.\n")
-    
+    print(newSentFile + "\n" + newindexFile + " done.\n")
+
 if __name__ == "__main__":
     representationDim = 50
     classes = ["book", "music", "dvd"]
@@ -57,17 +57,17 @@ if __name__ == "__main__":
     languages = ["en", "cn"]
     
     corpusPath = "G:\\liuzhuang\\corpus\\"
-    cnnOutputPath = "G:\\liuzhuang\\corpus\\cnn_output\\"
+    cnnOutputPath = "G:\\liuzhuang\\corpus\\cnn_output_test\\"
 
     for clas in classes:
         for wordDimension in wordDimensions:
             for language in languages:
                 branchPath = str(wordDimension)+"d\\"+language+"\\"+clas+"\\"
-                indexFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.index"
-                sentFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.sent"
-                numberFile = corpusPath + language + "\\label_"+clas+"_new.txt.number"
+                indexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index"
+                sentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent"
+                numberFile = corpusPath + language + "\\test_"+clas+"_new.txt.number"
 
-                newSentFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.sent.0"
-                newindexFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.index.0"
+                newSentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent.0"
+                newindexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index.0"
                 
                 AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexFile, representationDim)
