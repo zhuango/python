@@ -692,18 +692,18 @@ if __name__ == '__main__':
     languages = ["en", "cn"]
     wordDimensions = [50, 100]
     
-    corpusPath = "G:\\liuzhuang\\corpus\\"
-    lstmOutputPath = "G:\\liuzhuang\\corpus\\lstm_output\\"
+    corpusPath = "G:/liuzhuang/corpus/"
+    lstmOutputPath = "G:/liuzhuang/corpus/lstm_output/"
     for clas in classes:
         for language in languages:
             for wordDimension in wordDimensions:
-                branchPath = str(wordDimension)+"d\\"+language+"\\"+clas+"\\"
+                branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
                 if(not os.path.exists(lstmOutputPath + branchPath)):
                     os.makedirs(lstmOutputPath + branchPath)
                 
-                dictPath = corpusPath + language + "\\label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
-                seriFilePath = corpusPath + language + "\\label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
-                labelFilePath = corpusPath + language + "\\label_"+clas+"_new.txt.label"
+                dictPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
+                seriFilePath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
+                labelFilePath = corpusPath + language + "/label_"+clas+"_new.txt.label"
                 datasetPath = lstmOutputPath + branchPath + clas +"_dataSet"+str(wordDimension)+".pkl"
                 
                 preprocess(seriFilePath, labelFilePath,datasetPath, wordDimension, batch_size = 10)

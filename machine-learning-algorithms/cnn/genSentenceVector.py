@@ -53,14 +53,14 @@ if __name__ == "__main__":
     wordDimensions = [50, 100]
     languages = ["en", "cn"]
     
-    corpusPath = "G:\\liuzhuang\\corpus\\"
-    cnnOutputPath = "G:\\liuzhuang\\corpus\\cnn_output\\"
+    corpusPath = "G:/liuzhuang/corpus/"
+    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output/"
     for clas in classes:
         for wordDimension in wordDimensions:
             for language in languages:
-                numberFile = corpusPath+language+"\\test_"+clas+"_new.txt.number"
-                fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\"+clas+"_output_50.txt"
-                indexFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "test_"+clas+"_new.txt.index"
-                sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "test_"+clas+"_new.txt.sent"
+                numberFile = corpusPath+language+"/test_"+clas+"_new.txt.number"
+                fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/"+clas+"_output_50.txt"
+                indexFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "test_"+clas+"_new.txt.index"
+                sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "test_"+clas+"_new.txt.sent"
                 
                 genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, mDimension)

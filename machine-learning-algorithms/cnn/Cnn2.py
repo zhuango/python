@@ -336,7 +336,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=10,
         # print type(test_Matrix_out)
         # print test_Matrix_out.ndim
         print test_Matrix_out.shape
-        numpy.savetxt(os.path.dirname(dataset) + "\\"+clas+'_output_'+str(epoch)+'.txt', test_Matrix_out.reshape(n_test_batches * batch_size, 50), fmt='%.4f', delimiter=' ')
+        numpy.savetxt(os.path.dirname(dataset) + "/"+clas+'_output_'+str(epoch)+'.txt', test_Matrix_out.reshape(n_test_batches * batch_size, 50), fmt='%.4f', delimiter=' ')
         result_Matrix = numpy.asarray([test_pred(i) for i in xrange(n_test_batches)])
         print result_Matrix.shape
         # numpy.savetxt(embedName+'/'+str(dimension)+'/filter'+str(filter)+'_map'+str(map)+'_result_'+str(epoch)+'.txt',
@@ -426,16 +426,16 @@ from genSentenceVector import genSentenceVector
 def SingleProcess(wordDimension, language, clas):
     posDimension = 0
     representationDim = 50    
-    corpusPath = "G:\\liuzhuang\\corpus\\"
-    cnnOutputPath = "G:\\liuzhuang\\corpus\\cnn_output_test\\"
+    corpusPath = "G:/liuzhuang/corpus/"
+    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output_test/"
 
-    branchPath = str(wordDimension)+"d\\"+language+"\\"+clas+"\\"
+    branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(cnnOutputPath + branchPath)):
         os.makedirs(cnnOutputPath + branchPath)
                     
     datasetPath = cnnOutputPath + branchPath + clas+"_dataSet"+str(wordDimension)+".pkl"
-    vectorFilePath = corpusPath + language + "\\test_"+clas+"_new.txt.extract_"+str(wordDimension)+".vector"
-    labelFilePath = corpusPath + language + "\\test_"+clas+"_new.txt.label"
+    vectorFilePath = corpusPath + language + "/test_"+clas+"_new.txt.extract_"+str(wordDimension)+".vector"
+    labelFilePath = corpusPath + language + "/test_"+clas+"_new.txt.label"
                 
     
     if(not os.path.exists(datasetPath)):
@@ -443,16 +443,16 @@ def SingleProcess(wordDimension, language, clas):
     evaluate_lenet5(n_epochs=50, dataset = datasetPath, clas = clas, dimension=wordDimension+posDimension, filter=3, map=200, batch_size=200, maxLen=5, poolSize=3)
     print(str(wordDimension) + " " + language + " " + clas + " is done. PID: " + str(os.getpid()))
 
-    numberFile = corpusPath+language+"\\test_"+clas+"_new.txt.number"
-    fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\"+clas+"_output_50.txt"
-    indexFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "test_"+clas+"_new.txt.index"
-    sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d\\"+language+"\\"+clas+"\\" + "test_"+clas+"_new.txt.sent"
+    numberFile = corpusPath+language+"/test_"+clas+"_new.txt.number"
+    fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/"+clas+"_output_50.txt"
+    indexFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "test_"+clas+"_new.txt.index"
+    sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "test_"+clas+"_new.txt.sent"
     genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, representationDim)
     
-    branchPath = str(wordDimension)+"d\\"+language+"\\"+clas+"\\"
+    branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     indexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index"
     sentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent"
-    numberFile = corpusPath + language + "\\test_"+clas+"_new.txt.number"
+    numberFile = corpusPath + language + "/test_"+clas+"_new.txt.number"
     newSentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent.0"
     newindexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index.0"
     AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexFile, representationDim)

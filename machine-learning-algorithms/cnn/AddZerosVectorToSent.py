@@ -56,16 +56,16 @@ if __name__ == "__main__":
     wordDimensions = [50, 100]
     languages = ["en", "cn"]
     
-    corpusPath = "G:\\liuzhuang\\corpus\\"
-    cnnOutputPath = "G:\\liuzhuang\\corpus\\cnn_output_test\\"
+    corpusPath = "G:/liuzhuang/corpus/"
+    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output_test/"
 
     for clas in classes:
         for wordDimension in wordDimensions:
             for language in languages:
-                branchPath = str(wordDimension)+"d\\"+language+"\\"+clas+"\\"
+                branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
                 indexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index"
                 sentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent"
-                numberFile = corpusPath + language + "\\test_"+clas+"_new.txt.number"
+                numberFile = corpusPath + language + "/test_"+clas+"_new.txt.number"
 
                 newSentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent.0"
                 newindexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index.0"
