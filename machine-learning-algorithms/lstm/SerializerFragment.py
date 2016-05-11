@@ -95,6 +95,7 @@ def SingleProcess(wordDimension, i):
             p = Process(target=generate, args=(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath))
             p.start()
             print(str(wordDimension) + " " + clas + " is running. PID: " + str(p.ident))
+            p.join()
 if __name__ == "__main__":
 
     wordDimensions = [50, 100]
@@ -106,3 +107,4 @@ if __name__ == "__main__":
             p = Process(target=SingleProcess, args=(wordDimension, 0))
             p.start()
             print(str(wordDimension) + "D " + " is running. PID: " + str(p.ident))
+            p.join()

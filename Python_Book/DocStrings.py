@@ -9,3 +9,4 @@ print(myfunction.__doc__)
 
 import os 
 os.path.dirname
+os.path.mkdir
