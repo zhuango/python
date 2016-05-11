@@ -64,7 +64,7 @@ def generate(wordslist, vectors, dimension, dictPath, serializationPath):
                     dictFile.writelines(wordVector.strip() + "\n")
                 serialicationNumbersStr += str(dictTable[word]) + " "
             serialicationFile.write(serialicationNumbersStr.strip() + "\n")
-    print("There are " + str(notFoundCount) + " words witch are not found.")
+    print("Done, there are " + str(notFoundCount) + " words witch are not found.")
     dictFile.close()
     serialicationFile.close()
     
@@ -90,11 +90,11 @@ def SingleProcess(wordDimension, i):
             dictPath = corpusPath +language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
             serializationPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
             ############
-            generate(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath)
+            #generate(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath)
             ############
             p = Process(target=generate, args=(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath))
             p.start()
-            print(str(wordDimension) + " " + clas + " is running. PID: " + str(p.ident))
+            print(str(wordDimension) + " " + clas + " " + language + " is running. PID: " + str(p.ident))
             p.join()
 if __name__ == "__main__":
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     #cnnOutputPath = "G:/liuzhuang/corpus/lstm_output/"
 
     for wordDimension in wordDimensions:
-            SingleProcess(wordDimension,)#
+            #SingleProcess(wordDimension,)#
             p = Process(target=SingleProcess, args=(wordDimension,))
             p.start()
             print(str(wordDimension) + "D " + " is running. PID: " + str(p.ident))
