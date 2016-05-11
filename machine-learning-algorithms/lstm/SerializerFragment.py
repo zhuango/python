@@ -73,22 +73,22 @@ import os
 import time
 
 def SingleProcess(wordDimension, i):
-    corpusPath = "G:\\liuzhuang\\corpus\\"
+    corpusPath = "G:/liuzhuang/corpus/"
     classes = ["book", "music", "dvd"]
     languages = ["en", "cn"]
     vectorDicts = {}
-    vectorsDict_en = corpusPath + languages[0]+"_vectorTable\\"+languages[0]+"_vectors_"+ str(wordDimension) +".txt"
-    vectorsDict_cn = corpusPath + languages[1]+"_vectorTable\\"+languages[1]+"_vectors_"+ str(wordDimension) +".txt"
+    vectorsDict_en = corpusPath + languages[0]+"_vectorTable/"+languages[0]+"_vectors_"+ str(wordDimension) +".txt"
+    vectorsDict_cn = corpusPath + languages[1]+"_vectorTable/"+languages[1]+"_vectors_"+ str(wordDimension) +".txt"
     vectorDicts["en"] = generateVectorDict(vectorsDict_en)
     vectorDicts["cn"] = generateVectorDict(vectorsDict_cn)
     
     for clas in classes:
         for language in languages:
-            wordslist = corpusPath + language + "\\label_"+clas+"_new.txt.extract"
-            #wordslist_test = corpusPath + languages[0] + "\\test_"+clas+"_new.txt.extract"
+            wordslist = corpusPath + language + "/label_"+clas+"_new.txt.extract"
+            #wordslist_test = corpusPath + languages[0] + "/test_"+clas+"_new.txt.extract"
 
-            dictPath = corpusPath +language + "\\label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
-            serializationPath = corpusPath + language + "\\label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
+            dictPath = corpusPath +language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
+            serializationPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
             ############
             generate(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath)
             ############
@@ -99,10 +99,10 @@ if __name__ == "__main__":
 
     wordDimensions = [50, 100]
     
-    #cnnOutputPath = "G:\\liuzhuang\\corpus\\lstm_output\\"
+    #cnnOutputPath = "G:/liuzhuang/corpus/lstm_output/"
 
     for wordDimension in wordDimensions:
-            SingleProcess(wordDimension, 0)#
-            p = Process(target=SingleProcess, args=(wordDimension, 0))
+            SingleProcess(wordDimension,)#
+            p = Process(target=SingleProcess, args=(wordDimension,))
             p.start()
             print(str(wordDimension) + "D " + " is running. PID: " + str(p.ident))
