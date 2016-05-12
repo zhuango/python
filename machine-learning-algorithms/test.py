@@ -68,3 +68,6 @@ something = mask[:, :, None]
 getSome = theano.function(inputs=[mask], outputs=something)
 print(getSome([[1, 2], [3, 4], [5, 0]]))
 print(getSome([[1, 2], [3, 4], [5, 0]]))
+
+
+print(os.environ['PATH'])

@@ -337,7 +337,6 @@ def pred_probs(f_pred_prob, prepare_data, data, iterator, verbose=False):
 
     return probs
 
-
 def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
     """
     Just compute the error
@@ -346,11 +345,11 @@ def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
     """
     valid_err = 0
     for _, valid_index in iterator:
-        x_zheng, x_zheng_mask, x_ni, x_ni_mask, y = prepare_data([data[0][t] for t in valid_index],
-                                  [data[1][t] for t in valid_index], numpy.array(data[2])[valid_index],
+        x, x_mask, labels = prepare_data([data[0][t] for t in valid_index],
+                                  [data[1][t] for t in valid_index],
                                   maxlen=None)
-        preds = f_pred(x_zheng, x_zheng_mask, x_ni, x_ni_mask)
-        targets = numpy.array(data[2])[valid_index]
+        preds = f_pred(x, x_mask)
+        targets = numpy.array(data[1])[valid_index]
 
         valid_err += (preds == targets).sum()
     valid_err = 1. - numpy_floatX(valid_err) / len(data[0])
@@ -700,6 +699,7 @@ def SingleProcess(clas, language, wordDimension):
         dictPath = dictPath,
         dataSetPath = datasetPath,
         dim_proj = wordDimension,
+        n_words = wc(dictPath),
         max_epochs=30,
         test_size=wc(seriFilePath)
         )

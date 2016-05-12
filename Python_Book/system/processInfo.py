@@ -38,4 +38,4 @@ def getAllProcessInfo():
         instances.append(getProcessInfo(proc))  
     return instances 
     
-processinfo(sys.argv[1])  
+#processinfo(sys.argv[1])
