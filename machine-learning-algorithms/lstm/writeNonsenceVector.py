@@ -1,7 +1,7 @@
 import numpy
 import argparse
 
-def writeNonsenceVector(fileName, countNeedToAdd, wordDimension):
+def writeNonsenceVector(fileName, countNeedToAdd, wordDimension, randHigh):
     fragmentLenth = 5
     dimension = wordDimension * fragmentLenth
 
@@ -15,7 +15,7 @@ def writeNonsenceVector(fileName, countNeedToAdd, wordDimension):
     with open(fileName, "a") as f:
         for i in range(countNeedToAdd):
             vectorStr = ""
-            for number in list(numpy.random.rand(dimension) - 0.5):
+            for number in list(numpy.random.randint(low=1, high=randHigh,size=fragmentLenth)):
                 vectorStr += str(number) + " "
             f.write(vectorStr + "\n")
             

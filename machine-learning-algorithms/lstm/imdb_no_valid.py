@@ -37,7 +37,7 @@ def prepare_data(seqs, labels, maxlen=None):
     n_samples = len(seqs)
     maxlen = numpy.max(lengths)
 
-    x = numpy.zeros((maxlen, n_samples)).astype('int64')
+    x = numpy.zeros((maxlen, n_samples)).astype('int32')
     x_mask = numpy.zeros((maxlen, n_samples)).astype(theano.config.floatX)
     for idx, s in enumerate(seqs):
         x[:lengths[idx], idx] = s

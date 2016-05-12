@@ -14,6 +14,11 @@ import imdb_no_valid
 
 datasets = {'imdb': (imdb_no_valid.load_data, imdb_no_valid.prepare_data)}
 
+
+from wc import wc
+from writeNonsenceLabel import writeNonsenceLabel
+from writeNonsenceVector import writeNonsenceVector
+
 # Set the random number generators' seeds for consistency
 SEED = 123
 numpy.random.seed(SEED)
@@ -92,7 +97,7 @@ def init_params(options):
     # randn = numpy.random.rand(options['n_words'],
     #                           options['dim_proj'])
     #params['Wemb'] = numpy.loadtxt("paper experiment/dev_seq_relation_new_200/data/embeddings200_seq_relation_0119.txt", delimiter=' ')
-    params['Wemb'] = numpy.loadtxt(model_options['dictPath'])
+    params['Wemb'] = numpy.loadtxt(options['dictPath'], dtype='float32')
     # params['Wemb'] = (0.01 * randn).astype(config.floatX)
     params = get_layer(options['encoder'])[0](options,
                                               params,
@@ -275,9 +280,9 @@ def build_model(tparams, options):
     # Used for dropout.
     use_noise = theano.shared(numpy_floatX(0.))
 
-    x = tensor.matrix('x', dtype='int64')
+    x = tensor.matrix('x', dtype='int32')
     mask = tensor.matrix('mask', dtype=config.floatX)
-    y = tensor.vector('y', dtype='int64')
+    y = tensor.vector('y', dtype='int32')
 
     n_timesteps = x.shape[0]
     n_samples = x.shape[1]
@@ -606,8 +611,20 @@ def train_lstm(
                           (end_time - start_time))
     return train_err, test_err
 
+
+def AddSeriCountToTimesOfBatch_size(fileName, batch_size, wordDimension, randHigh):
+    count = wc(fileName)
+    countNeedToAdd = (batch_size - (count % batch_size))%batch_size
+    writeNonsenceVector(fileName, countNeedToAdd, wordDimension, randHigh)
+    
+    
+def AddLabelCountToTimesOfBatch_size(fileName, batch_size):
+    count = wc(fileName)
+    countNeedToAdd = (batch_size - (count % batch_size))%batch_size
+    writeNonsenceLabel(fileName, countNeedToAdd)
+
 #def preprocess(type, category, dimension, dataSetPath = ""):
-def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_size = 10):
+def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_size = 10,dictCount = 1000):
 #def preprocess(seriFilePath_train = seriFilePath_train, 
 #               seriFilePath_test = seriFilePath_test,
 #               labelFilePath_train = labelFilePath_train, 
@@ -624,7 +641,7 @@ def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_si
     # train_label_file = open("H:/CNN_YANG/"+embedName+"/train_label_"+str(wordDimension+posDimension)+".txt", 'r')
     
     #############################################
-    AddVectorCountToTimesOfBatch_size(seriFilePath, batch_size, wordDimension)
+    AddSeriCountToTimesOfBatch_size(seriFilePath, batch_size, wordDimension, dictCount)
     AddLabelCountToTimesOfBatch_size(labelFilePath, batch_size)
     #############################################
     train_vec_file=open(seriFilePath, 'r')
@@ -659,27 +676,33 @@ def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_si
 
     train_data = [train_data_x, train_data_y]
     test_data = [test_data_x, test_data_y]
-    cPickle.dump(train_data, output_file)
-    cPickle.dump(test_data, output_file)
+    pkl.dump(train_data, output_file)
+    pkl.dump(test_data, output_file)
 
     output_file.close()
 
-from wc import wc
-from writeNonsenceLabel import writeNonsenceLabel
-from writeNonsenceVector import writeNonsenceVector
-
-def AddSeriCountToTimesOfBatch_size(fileName, batch_size, wordDimension):
-    count = wc(fileName)
-    countNeedToAdd = (batch_size - (count % batch_size))%batch_size
-    writeNonsenceVector(fileName, countNeedToAdd, wordDimension)
+def SingleProcess(clas, language, wordDimension):
     
-    
-def AddLabelCountToTimesOfBatch_size(fileName, batch_size):
-    count = wc(fileName)
-    countNeedToAdd = (batch_size - (count % batch_size))%batch_size
-    writeNonsenceLabel(fileName, countNeedToAdd)
-
-
+    corpusPath = "G:/liuzhuang/corpus/"
+    lstmOutputPath = "G:/liuzhuang/corpus/lstm_output/"
+    branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
+    if(not os.path.exists(lstmOutputPath + branchPath)):
+        os.makedirs(lstmOutputPath + branchPath)
+    dictPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
+    seriFilePath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
+    labelFilePath = corpusPath + language + "/label_"+clas+"_new.txt.label"
+    datasetPath = lstmOutputPath + branchPath + clas +"_dataSet"+str(wordDimension)+".pkl"
+                
+    if(not os.path.exists(datasetPath)):
+        preprocess(seriFilePath, labelFilePath,datasetPath, wordDimension, batch_size = 10, dictCount = wc(dictPath))
+    train_lstm(
+        lstmOutPutRootPath = lstmOutputPath + branchPath,
+        dictPath = dictPath,
+        dataSetPath = datasetPath,
+        max_epochs=30,
+        test_size=wc(seriFilePath)
+        )
+from multiprocessing import Process
 if __name__ == '__main__':
     # See function train for all possible parameter and there definition.
     category = 'dvd'
@@ -691,27 +714,12 @@ if __name__ == '__main__':
     classes = ["book", "music", "dvd"]
     languages = ["en", "cn"]
     wordDimensions = [50, 100]
-    
-    corpusPath = "G:/liuzhuang/corpus/"
-    lstmOutputPath = "G:/liuzhuang/corpus/lstm_output/"
+
     for clas in classes:
         for language in languages:
-            for wordDimension in wordDimensions:
-                branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
-                if(not os.path.exists(lstmOutputPath + branchPath)):
-                    os.makedirs(lstmOutputPath + branchPath)
-                
-                dictPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
-                seriFilePath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
-                labelFilePath = corpusPath + language + "/label_"+clas+"_new.txt.label"
-                datasetPath = lstmOutputPath + branchPath + clas +"_dataSet"+str(wordDimension)+".pkl"
-                
-                preprocess(seriFilePath, labelFilePath,datasetPath, wordDimension, batch_size = 10)
-
-                train_lstm(
-                    lstmOutPutRootPath = lstmOutputPath + branchPath,
-                    dictPath = dictPath,
-                    dataSetPath = datasetPath,
-                    max_epochs=30,
-                    test_size=wc(seriFilePath),
-                )
+            for wordDimension in wordDimensions:                
+                #SingleProcess(clas, language, wordDimension)
+                p = Process(target=SingleProcess, args=(clas, language, wordDimension))
+                p.start()
+                print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
+                p.join()
