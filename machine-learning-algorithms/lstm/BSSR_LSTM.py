@@ -97,7 +97,7 @@ def init_params(options):
     # randn = numpy.random.rand(options['n_words'],
     #                           options['dim_proj'])
     #params['Wemb'] = numpy.loadtxt("paper experiment/dev_seq_relation_new_200/data/embeddings200_seq_relation_0119.txt", delimiter=' ')
-    params['Wemb'] = numpy.loadtxt(options['dictPath'], dtype='float32')
+    params['Wemb'] = numpy.loadtxt(options['dictPath'], delimiter=' ',dtype='float32')
     # params['Wemb'] = (0.01 * randn).astype(config.floatX)
     params = get_layer(options['encoder'])[0](options,
                                               params,
@@ -683,8 +683,8 @@ def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_si
 
 def SingleProcess(clas, language, wordDimension):
     
-    corpusPath = "G:/liuzhuang/corpus/"
-    lstmOutputPath = "G:/liuzhuang/corpus/lstm_output/"
+    corpusPath = "/home/laboratory/corpus/"
+    lstmOutputPath = "/home/laboratory/corpus/lstm_output/"
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(lstmOutputPath + branchPath)):
         os.makedirs(lstmOutputPath + branchPath)
@@ -699,6 +699,7 @@ def SingleProcess(clas, language, wordDimension):
         lstmOutPutRootPath = lstmOutputPath + branchPath,
         dictPath = dictPath,
         dataSetPath = datasetPath,
+        dim_proj = wordDimension,
         max_epochs=30,
         test_size=wc(seriFilePath)
         )
@@ -718,7 +719,7 @@ if __name__ == '__main__':
     for clas in classes:
         for language in languages:
             for wordDimension in wordDimensions:                
-                #SingleProcess(clas, language, wordDimension)
+                SingleProcess(clas, language, wordDimension)#
                 p = Process(target=SingleProcess, args=(clas, language, wordDimension))
                 p.start()
                 print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
