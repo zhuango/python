@@ -46,7 +46,7 @@ def generate(wordslist, vectors, dimension, dictPath, serializationPath):
         for line in f:
             serialicationNumbersStr = ""
             linenumber += 1  # ################################
-            if (linenumber % 1000 == 0): print("generate serialization: "+str(linenumber))# 
+            if (linenumber % 1000 == 0): print(serializationPath + " generate serialization: "+str(linenumber))# 
             for word in line.rstrip().split(' '):
                 wordVector=""
                 if(not word in dictTable.keys()):
@@ -64,7 +64,7 @@ def generate(wordslist, vectors, dimension, dictPath, serializationPath):
                     dictFile.writelines(wordVector.strip() + "\n")
                 serialicationNumbersStr += str(dictTable[word]) + " "
             serialicationFile.write(serialicationNumbersStr.strip() + "\n")
-    print("Done, there are " + str(notFoundCount) + " words witch are not found.")
+    print(str(os.getpid()) + " Done, there are " + str(notFoundCount) + " words witch are not found.")
     dictFile.close()
     serialicationFile.close()
     
@@ -72,7 +72,7 @@ from multiprocessing import Process
 import os
 import time
 
-def SingleProcess(wordDimension, i):
+def SingleProcess(wordDimension):
     corpusPath = "G:/liuzhuang/corpus/"
     classes = ["book", "music", "dvd"]
     languages = ["en", "cn"]
@@ -84,18 +84,23 @@ def SingleProcess(wordDimension, i):
     
     for clas in classes:
         for language in languages:
-            wordslist = corpusPath + language + "/label_"+clas+"_new.txt.extract"
+            wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract"
             #wordslist_test = corpusPath + languages[0] + "/test_"+clas+"_new.txt.extract"
 
-            dictPath = corpusPath +language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
-            serializationPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
+            dictPath = corpusPath +language + "/test_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
+            serializationPath = corpusPath + language + "/test_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
+            
+            if(os.path.exists(dictPath)):
+                continue
+            
             ############
             #generate(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath)
             ############
+            
             p = Process(target=generate, args=(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath))
             p.start()
             print(str(wordDimension) + " " + clas + " " + language + " is running. PID: " + str(p.ident))
-            p.join()
+            #p.join()
 if __name__ == "__main__":
 
     wordDimensions = [50, 100]
