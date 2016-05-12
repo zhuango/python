@@ -8,5 +8,7 @@ def myfunction():
 print(myfunction.__doc__)
 
 import os 
-os.path.dirname
-os.path.mkdir
+print(os.path.dirname("/asd/ads/test.xtt"))
+
+#os.path.mkdir
+

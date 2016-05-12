@@ -72,8 +72,8 @@ from multiprocessing import Process
 import os
 import time
 
-def SingleProcess(wordDimension, i):
-    corpusPath = "G:/liuzhuang/corpus/"
+def SingleProcess(wordDimension):
+    corpusPath = "/home/laboratory/corpus/"
     classes = ["book", "music", "dvd"]
     languages = ["en", "cn"]
     vectorDicts = {}
