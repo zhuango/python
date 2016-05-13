@@ -14,9 +14,10 @@ string getOneLine(string filename, unsigned int linepos)
     f.open(filename.c_str());
     unsigned int counter = 0;
     string line;
-    while(getline(f, line) && counter < linepos)
+    while(getline(f, line))
     {
         counter ++;
+        if(counter == linepos) break;
     }
     if(counter == linepos)
     {
@@ -56,7 +57,7 @@ map<string, string> *generateVectorDict(string vectorDictPath)
 {
     map<string, string> *vectors = new map<string, string>();
     
-    int linenumber = 0;
+    uint linenumber = 0;
     
     ifstream vectorFile;
     vectorFile.open(vectorDictPath.c_str());
