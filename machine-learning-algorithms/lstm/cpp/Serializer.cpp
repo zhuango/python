@@ -153,7 +153,7 @@ string str(T number)
             }
             serializationFile << serialicationNumbersStr << "\n";
         }
-        cout << serializationPath << " Done, there are " << notFoundCount << " words which are not found.";
+        cout << serializationPath << " Done, there are " << notFoundCount << " words which are not found." << endl;
         dictFile.close();
         serializationFile.close();
     }
@@ -203,13 +203,13 @@ void SingleProcess(unsigned int wordDimension)
     string vectorsDict_en = corpusPath + languages[0]+"_vectorTable/"+languages[0]+"_vectors_"+ str(wordDimension) +".txt";
     string vectorsDict_cn = corpusPath + languages[1]+"_vectorTable/"+languages[1]+"_vectors_"+ str(wordDimension) +".txt";
     map<string, string> *vectorDicts_en = generateVectorDict(vectorsDict_en);
-    map<string, string> *vectorDicts_cn = generateVectorDict(vectorsDict_cn);
+    //map<string, string> *vectorDicts_cn = generateVectorDict(vectorsDict_cn);
     
     for(int i =0; i < classes.size(); ++i)
     {
         string clas = classes[i];
         Generate(corpusPath, "en", clas, wordDimension, *vectorDicts_en);
-        Generate(corpusPath, "cn", clas, wordDimension, *vectorDicts_cn);
+        //Generate(corpusPath, "cn", clas, wordDimension, *vectorDicts_cn);
     }
 }
 
@@ -217,7 +217,7 @@ int main()
 {
     //wordDimensions = [50, 100];
     SingleProcess(50);
-    SingleProcess(100);
+    //SingleProcess(100);
     
     return 0;
 }
