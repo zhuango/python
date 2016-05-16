@@ -715,12 +715,14 @@ if __name__ == '__main__':
     classes = ["book", "music", "dvd"]
     languages = ["en", "cn"]
     wordDimensions = [50, 100]
-
+    
+    processCount = 0
     for clas in classes:
         for language in languages:
-            for wordDimension in wordDimensions:                
-                SingleProcess(clas, language, wordDimension)#
+            for wordDimension in wordDimensions:
+                processCount += 1
+                #SingleProcess(clas, language, wordDimension)#
                 p = Process(target=SingleProcess, args=(clas, language, wordDimension))
                 p.start()
                 print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
-                p.join()
+                if(processCount % 3 == 0):  p.join()
