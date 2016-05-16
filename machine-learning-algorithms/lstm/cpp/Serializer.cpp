@@ -177,7 +177,7 @@ extern "C"
 }
 void Generate(string corpusPath, string language, string clas, unsigned int wordDimension,map<string, string> &vectors)
 {
-            string wordslist = corpusPath + language + "/label_"+clas+"_new.txt.extract";
+            string wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract";
 
             string dictPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension) + language+".lstmDict";
             string serializationPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension)+ language+".serialization";

@@ -89,7 +89,7 @@ def init_params(options, dim, sentimentDim):
 
     # randn = numpy.random.rand(options['n_words'],
                               # options['dim_proj'])
-    params['Wemb'] = numpy.loadtxt('H:/cross-lingual/'+type+'_'+category+'_dict_'+str(dim-sentimentDim)+'.txt', delimiter=' ', dtype='float32')
+    params['Wemb'] = numpy.loadtxt(options['dictPath'], delimiter=' ', dtype='float32')
     # params['Wemb'] = params['Wemb'].astype(config.floatX)
     # params['Wemb'] = (0.01 * randn).astype(config.floatX)
     params = get_layer(options['encoder'])[0](options,
@@ -507,6 +507,8 @@ def train_lstm(
     sentimentDim=-1,
     patience=50,  # Number of epoch to wait before early stop if no progress
     category='',
+    dataSetPath = "",
+    dictPath = "",
     max_epochs=-1,  # The maximum number of epoch to run
     dispFreq=10,  # Display to stdout the training progress every N updates
     decay_c=0.,  # Weight decay for the classifier applied to the U weights.
@@ -535,6 +537,7 @@ def train_lstm(
     embedName = category+'_'+str(dim_proj)
     model_options = locals().copy()
 
+    model_options['dictPath'] = dictPath
 
 
     print "model options", model_options
@@ -542,7 +545,7 @@ def train_lstm(
     load_data, prepare_data = get_dataset(dataset)
 
     print 'Loading data'
-    train, test = load_data(path=category+'.pkl', n_words=n_words, maxlen=maxlen)
+    train, test = load_data(path=dataSetPath + category+'.pkl', n_words=n_words, maxlen=maxlen)
     if test_size > 0:
         # The test set is sorted by size, but we want to keep random
         # size example.  So we must select a random selection of the
@@ -674,7 +677,7 @@ def train_lstm(
                     use_noise.set_value(0.)
                     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
                     #process_dict1(file_name, enTrain, enTest, cnTrain, cnTest)
-                    afd, acd = process_dict1('music_wordList.txt', 335388, 146881, 369464, 159125)
+                    afd, acd = process_dict1(os.path.dirname(dictPath) + category +'_wordList.txt', 335388, 146881, 369464, 159125)
                     process_Wemb(afd, acd, tparams, 100)
                     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
                     train_err = pred_error(f_pred, prepare_data, train, kf)
@@ -755,10 +758,9 @@ def train_lstm(
                           (end_time - start_time))
     return train_err, test_err
 
-def preprocess(type, category, dimension, dataSetPath = ""):
+def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serializer/", dataSetPath = ""):
     import cPickle
     print("preprocessing...")
-    dataPath = "G:\\liuzhuang\\data\\"
     train_data_x_zheng = []
     train_data_x_ni = []
     train_data_y = []
@@ -794,7 +796,7 @@ def preprocess(type, category, dimension, dataSetPath = ""):
         else:
             test_data_y.extend([0])
 
-    output_file = open(dataSetPath + "\\"+category+'.pkl', 'w')
+    output_file = open(dataSetPath+category+'.pkl', 'w')
 
     train_data = [train_data_x_zheng, train_data_x_ni, train_data_y]
     test_data = [test_data_x_zheng, test_data_x_ni, test_data_y]
@@ -803,25 +805,54 @@ def preprocess(type, category, dimension, dataSetPath = ""):
 
     output_file.close()
 
+def WordCount(type, category, dimension):
+    #######################
+    filenames = []
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_test_"+category+"_en_"+str(dimension)+".txt")
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_test_"+category+"_cn_"+str(dimension)+".txt")
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_train_"+category+"_en_"+str(dimension)+".txt")
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_train_"+category+"_cn_"+str(dimension)+".txt")
+    wordsnumber=0
+    maxLen = 0
+    for filename in filenames:
+        wordsnumber += wcWord(filename)
+        tmpLen = maxWordLen(filename)
+        if(maxLen < maxWordLen(filename)):
+            maxLen = tmpLen
+    print(wordsnumber)
+    return wordsnumber, maxLen
+    #######################
+
+import os
+from wc import wcWord, maxWordLen
 
 if __name__ == '__main__':
     # See function train for all possible parameter and there definition.
     category = 'music'
-    dimension = 150
+    dimension = 100
     sentimentDim = 50
+    wordDimension = dimension - sentimentDim
     type = 'semantic_sentiment'
     # type = 'semantic'
+    outputDir = "G:/liuzhuang/corpus/TotalOutput/" + str(wordDimension) + "d/" + category + "/"
+    SeriPath = "G:/liuzhuang/corpus/Serializer/"
+    dictPath = SeriPath + type + "_" + category +"_dict_"+ str(wordDimension)+".txt"
+    if(not os.path.exists(outputDir)):
+        os.makedirs(outputDir)
 
-    preprocess(type, category, dimension-sentimentDim)
-
+    preprocess(type, category, wordDimension,SeriPath, outputDir)
+    
+    n_words,maxlen = WordCount(type, category, wordDimension);
     train_lstm(
         type=type,
         dim_proj=dimension,
         sentimentDim=sentimentDim,
         category=category,
+        dataSetPath=outputDir,
+        dictPath = dictPath,
         max_epochs=10,
-        n_words=1010858,
-        maxlen=1218,
+        n_words=n_words,
+        maxlen=maxlen + 1,
         decay_c=0.0001,
         test_size=4000,
         alpha=1,
