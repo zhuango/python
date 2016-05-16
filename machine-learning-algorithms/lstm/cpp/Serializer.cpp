@@ -32,13 +32,13 @@ string getOneLine(string filename, unsigned int linepos)
 vector<string> *split(string line)
 {
     istringstream toLine(line);
-    vector<string> *tokens = new vector<string>(istream_iterator<string>{toLine}, istream_iterator<string>{});
+    //vector<string> *tokens = new vector<string>(istream_iterator<string>{toLine}, istream_iterator<string>{});
 //    copy(
 //        istream_iterator<string>(toLine),
 //        istream_iterator<string(),
 //        back_inserter(tokens)
 //    )
-    return tokens;
+    return NULL;
 }
 
 vector<string> *split(string line, char delim)
@@ -57,7 +57,7 @@ map<string, string> *generateVectorDict(string vectorDictPath)
 {
     map<string, string> *vectors = new map<string, string>();
     
-    uint linenumber = 0;
+    unsigned int linenumber = 0;
     
     ifstream vectorFile;
     vectorFile.open(vectorDictPath.c_str());
@@ -67,7 +67,7 @@ map<string, string> *generateVectorDict(string vectorDictPath)
         while(getline(vectorFile, line))
         {
             linenumber++;
-            if(linenumber % 1000 == 0)
+            if(linenumber % 5000 == 0)
             {
                 cout << "generate vector dict: " << linenumber << endl;
             }
@@ -78,6 +78,7 @@ map<string, string> *generateVectorDict(string vectorDictPath)
                 vectorStr += (*vals)[i] + " ";
             }
             vectors->insert(pair<string, string>((*vals)[0], vectorStr));
+			delete vals;
         }
             
     }
@@ -176,10 +177,10 @@ extern "C"
 }
 void Generate(string corpusPath, string language, string clas, unsigned int wordDimension,map<string, string> &vectors)
 {
-            string wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract";
+            string wordslist = corpusPath + language + "/label_"+clas+"_new.txt.extract";
 
-            string dictPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict";
-            string serializationPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization";
+            string dictPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension) + language+".lstmDict";
+            string serializationPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension)+ language+".serialization";
             
             // if(os.path.exists(dictPath)):
             //     continue
@@ -192,7 +193,7 @@ void Generate(string corpusPath, string language, string clas, unsigned int word
 }
 void SingleProcess(unsigned int wordDimension)
 {
-    string corpusPath = "/home/laboratory/corpus/";
+    string corpusPath = "G:/liuzhuang/corpus/";
     vector<string> classes;
     classes.push_back("book");
     classes.push_back("music");
@@ -205,12 +206,14 @@ void SingleProcess(unsigned int wordDimension)
     map<string, string> *vectorDicts_en = generateVectorDict(vectorsDict_en);
     //map<string, string> *vectorDicts_cn = generateVectorDict(vectorsDict_cn);
     
-    for(int i =0; i < classes.size(); ++i)
+    for(unsigned int i =0; i < classes.size(); ++i)
     {
         string clas = classes[i];
         Generate(corpusPath, "en", clas, wordDimension, *vectorDicts_en);
         //Generate(corpusPath, "cn", clas, wordDimension, *vectorDicts_cn);
     }
+	delete vectorDicts_en;
+	delete vectorDicts_cn;
 }
 
 int main()

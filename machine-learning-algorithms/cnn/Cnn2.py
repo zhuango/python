@@ -189,7 +189,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=10,
         rng,
         input=layer1_input,
         n_in=nkerns[0] * 1 * ((maxLen-filter+1)/poolSize),
-        n_out=200,
+        n_out=100,
         activation=T.tanh
     )
 
@@ -198,7 +198,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=10,
     layer2 = HiddenLayer(
         rng,
         input=layer2_input,
-        n_in=200,
+        n_in=100,
         n_out=50,
         activation=T.tanh
     )
@@ -427,40 +427,40 @@ def SingleProcess(wordDimension, language, clas):
     posDimension = 0
     representationDim = 50    
     corpusPath = "G:/liuzhuang/corpus/"
-    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output_test/"
+    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output/"
 
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(cnnOutputPath + branchPath)):
         os.makedirs(cnnOutputPath + branchPath)
                     
     datasetPath = cnnOutputPath + branchPath + clas+"_dataSet"+str(wordDimension)+".pkl"
-    vectorFilePath = corpusPath + language + "/test_"+clas+"_new.txt.extract_"+str(wordDimension)+".vector"
-    labelFilePath = corpusPath + language + "/test_"+clas+"_new.txt.label"
+    vectorFilePath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".vector"
+    labelFilePath = corpusPath + language + "/label_"+clas+"_new.txt.label"
                 
     
     if(not os.path.exists(datasetPath)):
         preprocess(vectorFilePath = vectorFilePath, labelFilePath = labelFilePath, dataSetPath = datasetPath, wordDimension = wordDimension, batch_size = 200)
-    evaluate_lenet5(n_epochs=50, dataset = datasetPath, clas = clas, dimension=wordDimension+posDimension, filter=3, map=200, batch_size=200, maxLen=5, poolSize=3)
+    evaluate_lenet5(n_epochs=50, dataset = datasetPath, clas = clas, dimension=wordDimension+posDimension, filter=3, map=200, batch_size=200, maxLen=5, poolSize=1)
     print(str(wordDimension) + " " + language + " " + clas + " is done. PID: " + str(os.getpid()))
 
-    numberFile = corpusPath+language+"/test_"+clas+"_new.txt.number"
-    fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/"+clas+"_output_50.txt"
-    indexFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "test_"+clas+"_new.txt.index"
-    sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "test_"+clas+"_new.txt.sent"
+    numberFile = corpusPath+language+"/label_"+clas+"_new.txt.number"
+    fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/"+clas+"_output_40.txt"
+    indexFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "label_"+clas+"_new.txt.index"
+    sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "label_"+clas+"_new.txt.sent"
     genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, representationDim)
     
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
-    indexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index"
-    sentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent"
-    numberFile = corpusPath + language + "/test_"+clas+"_new.txt.number"
-    newSentFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.sent.0"
-    newindexFile = cnnOutputPath + branchPath + "test_"+clas+"_new.txt.index.0"
+    indexFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.index"
+    sentFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.sent"
+    numberFile = corpusPath + language + "/label_"+clas+"_new.txt.number"
+    newSentFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.sent.0"
+    newindexFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.index.0"
     AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexFile, representationDim)
                 
 if __name__ == '__main__':
 
     classes = ["book", "music", "dvd"]
-    wordDimensions = [50, 100]
+    wordDimensions = [50]#, 100]
     languages = ["en", "cn"]
     for wordDimension in wordDimensions:
         for language in languages:
