@@ -462,7 +462,7 @@ def process_Wemb(dic2, dic4, tparams, length, priorpolarityList):
         if(priorpolarityList[i]):
             index_dic, min_index = similar_(i, dic2[i], tp, length)
         # 1: tp[i, length:] = tp[min_index, length:]
-        tp[i-1, :length] = tp[min_index, :length]
+            tp[i-1, :length] = tp[min_index, :length]
         """
         tp[i, :length] = 0.0
         for ii in index_dic:
@@ -476,7 +476,7 @@ def process_Wemb(dic2, dic4, tparams, length, priorpolarityList):
         if(priorpolarityList[i]):
             index_dic1, min_index1 = similar_(j, dic4[j], tp, length)
         # 1: tp[j, length:] = tp[min_index1, length:]
-        tp[j-1, :length] = tp[min_index1, :length]
+            tp[j-1, :length] = tp[min_index1, :length]
         """
         tp[j, :length] = 0.0
         for jj in index_dic1:
@@ -686,7 +686,7 @@ def train_lstm(
                     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
                     #process_dict1(file_name, enTrain, enTest, cnTrain, cnTest)
                     afd, acd = process_dict1(os.path.dirname(dictPath)+"/" + category +'_wordList.txt', enTrain, cnTest, cnTrain, cnTest)
-                    process_Wemb(afd, acd, tparams, priorpolarityList)
+                    process_Wemb(afd, acd, tparams,wordVectorDim, priorpolarityList)
                     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
                     train_err = pred_error(f_pred, prepare_data, train, kf)
                     test_err = pred_error(f_pred, prepare_data, test, kf_test)
@@ -750,7 +750,7 @@ def train_lstm(
     use_noise.set_value(0.)
     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
     afd, acd = process_dict1(os.path.dirname(dictPath) + "/"+ category +'_wordList.txt', enTrain, cnTest, cnTrain, cnTest)
-    process_Wemb(afd, acd, tparams, priorpolarityList)
+    process_Wemb(afd, acd, tparams, wordVectorDim,priorpolarityList)
     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
     train_err = pred_error(f_pred, prepare_data, train, kf_train_sorted)
     test_err = pred_error(f_pred, prepare_data, test, kf_test)

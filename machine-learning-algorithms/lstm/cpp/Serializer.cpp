@@ -148,11 +148,13 @@ string str(T number)
                     }
                     dictIndex += 1;
                     dictTable.insert(pair<string, int>(word, dictIndex));
-                    dictFile << wordVector << "\n";
+                    wordVector[wordVector.size() - 1] = '\0';
+                    dictFile << wordVector.c_str() << "\n";
                 }
                 serialicationNumbersStr += str(dictTable[word]) + " ";
             }
-            serializationFile << serialicationNumbersStr << "\n";
+            serialicationNumbersStr[serialicationNumbersStr.size() - 1] = '\0';
+            serializationFile << serialicationNumbersStr.c_str() << "\n";
         }
         cout << serializationPath << " Done, there are " << notFoundCount << " words which are not found." << endl;
         dictFile.close();
@@ -177,18 +179,19 @@ extern "C"
 }
 void Generate(string corpusPath, string language, string clas, unsigned int wordDimension,map<string, string> &vectors)
 {
-            string wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract";
+    //test
+    string wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract";
 
-            string dictPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension) + language+".lstmDict";
-            string serializationPath = "test_"+clas+"_new.txt.extract_"+str(wordDimension)+ language+".serialization";
-            
-            // if(os.path.exists(dictPath)):
-            //     continue
-            
-            // ############
-            // #generate(wordslist, vectorDicts[language], wordDimension,dictPath,serializationPath)
-            // ############
-            generateSeri(wordslist, vectors, wordDimension,dictPath,serializationPath);
+    string dictPath = corpusPath + language + "/test_"+clas+"_new.txt.extract_"+str(wordDimension) + ".lstmDict";
+    string serializationPath = corpusPath + language + "/test_"+clas+"_new.txt.extract_"+str(wordDimension)+ ".serialization";
+    generateSeri(wordslist, vectors, wordDimension,dictPath,serializationPath);
+    
+    //train
+    wordslist = corpusPath + language + "/label_"+clas+"_new.txt.extract";
+
+    dictPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension) + ".lstmDict";
+    serializationPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+ ".serialization";
+    generateSeri(wordslist, vectors, wordDimension,dictPath,serializationPath);
 
 }
 void SingleProcess(unsigned int wordDimension)
@@ -204,13 +207,13 @@ void SingleProcess(unsigned int wordDimension)
     string vectorsDict_en = corpusPath + languages[0]+"_vectorTable/"+languages[0]+"_vectors_"+ str(wordDimension) +".txt";
     string vectorsDict_cn = corpusPath + languages[1]+"_vectorTable/"+languages[1]+"_vectors_"+ str(wordDimension) +".txt";
     map<string, string> *vectorDicts_en = generateVectorDict(vectorsDict_en);
-    //map<string, string> *vectorDicts_cn = generateVectorDict(vectorsDict_cn);
+    map<string, string> *vectorDicts_cn = generateVectorDict(vectorsDict_cn);
     
     for(unsigned int i =0; i < classes.size(); ++i)
     {
         string clas = classes[i];
         Generate(corpusPath, "en", clas, wordDimension, *vectorDicts_en);
-        //Generate(corpusPath, "cn", clas, wordDimension, *vectorDicts_cn);
+        Generate(corpusPath, "cn", clas, wordDimension, *vectorDicts_cn);
     }
 	delete vectorDicts_en;
 	delete vectorDicts_cn;
@@ -220,7 +223,7 @@ int main()
 {
     //wordDimensions = [50, 100];
     SingleProcess(50);
-    //SingleProcess(100);
+    SingleProcess(100);
     
     return 0;
 }

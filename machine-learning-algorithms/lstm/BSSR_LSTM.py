@@ -680,16 +680,16 @@ def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_si
 
     output_file.close()
 
-def SingleProcess(clas, language, wordDimension):
+def SingleProcess(clas, language, wordDimension, corpusType):
     
     corpusPath = "/home/laboratory/corpus/"
-    lstmOutputPath = "/home/laboratory/corpus/lstm_output/"
+    lstmOutputPath = "/home/laboratory/corpus/lstm_output" + corpusType+ "/"
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(lstmOutputPath + branchPath)):
         os.makedirs(lstmOutputPath + branchPath)
-    dictPath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
-    seriFilePath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
-    labelFilePath = corpusPath + language + "/label_"+clas+"_new.txt.label"
+    dictPath = corpusPath + language + "/"+corpusType+"_"+clas+"_new.txt.extract_"+str(wordDimension)+".lstmDict"
+    seriFilePath = corpusPath + language + "/"+corpusType+"_"+clas+"_new.txt.extract_"+str(wordDimension)+".serialization"
+    labelFilePath = corpusPath + language + "/"+corpusType+"_"+clas+"_new.txt.label"
     datasetPath = lstmOutputPath + branchPath + clas +"_dataSet"+str(wordDimension)+".pkl"
                 
     if(not os.path.exists(datasetPath)):
@@ -703,6 +703,20 @@ def SingleProcess(clas, language, wordDimension):
         max_epochs=30,
         test_size=wc(seriFilePath)
         )
+    numberFile = corpusPath+language+"/"+corpusType+"_"+clas+"_new.txt.number"
+    fragmentVectorFile = lstmOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/test_proj_best.txt"
+    indexFile = lstmOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + ""+corpusType+"_"+clas+"_new.txt.index"
+    sentenceVectorFile = lstmOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + ""+corpusType+"_"+clas+"_new.txt.sent"
+    genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, representationDim)
+    
+    branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
+    indexFile = lstmOutputPath + branchPath + corpusType+"_"+clas+"_new.txt.index"
+    sentFile = lstmOutputPath + branchPath + corpusType+"_"+clas+"_new.txt.sent"
+    numberFile = corpusPath + language + "/"+corpusType+"_"+clas+"_new.txt.number"
+    newSentFile = lstmOutputPath + branchPath +clas+"_"+corpusType+"_embed_" +str.upper(language)+".sent"
+    newindexFile = lstmOutputPath + branchPath +clas+"_"+corpusType+"_index_" +str.upper(language)+".sent"
+    AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexFile, representationDim)
+                
 from multiprocessing import Process
 if __name__ == '__main__':
     # See function train for all possible parameter and there definition.
@@ -715,14 +729,15 @@ if __name__ == '__main__':
     classes = ["book", "music", "dvd"]
     languages = ["en", "cn"]
     wordDimensions = [50, 100]
-    
+    corpusTypes = ["label", "test"]
     processCount = 0
-    for clas in classes:
-        for language in languages:
-            for wordDimension in wordDimensions:
-                processCount += 1
-                #SingleProcess(clas, language, wordDimension)#
-                p = Process(target=SingleProcess, args=(clas, language, wordDimension))
-                p.start()
-                print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
-                if(processCount % 3 == 0):  p.join()
+    for corpusType in corpusTypes:
+        for clas in classes:
+            for language in languages:
+                for wordDimension in wordDimensions:
+                    processCount += 1
+                    #SingleProcess(clas, language, wordDimension)#
+                    p = Process(target=SingleProcess, args=(clas, language, wordDimension,corpusType))
+                    p.start()
+                    print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
+                    if(processCount % 3 == 0):  p.join()
