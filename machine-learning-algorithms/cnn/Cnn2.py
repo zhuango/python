@@ -423,19 +423,19 @@ import time
 from AddZerosVectorToSent import AddZerosVectorToSent
 from genSentenceVector import genSentenceVector
 
-def SingleProcess(wordDimension, language, clas):
+def SingleProcess(wordDimension, language, clas, corpusType):
     posDimension = 0
     representationDim = 50    
     corpusPath = "G:/liuzhuang/corpus/"
-    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output/"
+    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output_" + corpusType + "/"
 
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(cnnOutputPath + branchPath)):
         os.makedirs(cnnOutputPath + branchPath)
                     
     datasetPath = cnnOutputPath + branchPath + clas+"_dataSet"+str(wordDimension)+".pkl"
-    vectorFilePath = corpusPath + language + "/label_"+clas+"_new.txt.extract_"+str(wordDimension)+".vector"
-    labelFilePath = corpusPath + language + "/label_"+clas+"_new.txt.label"
+    vectorFilePath = corpusPath + language + "/"+corpusType+"_"+clas+"_new.txt.extract_"+str(wordDimension)+".vector"
+    labelFilePath = corpusPath + language + "/"+corpusType+"_"+clas+"_new.txt.label"
                 
     
     if(not os.path.exists(datasetPath)):
@@ -443,18 +443,18 @@ def SingleProcess(wordDimension, language, clas):
     evaluate_lenet5(n_epochs=50, dataset = datasetPath, clas = clas, dimension=wordDimension+posDimension, filter=3, map=200, batch_size=200, maxLen=5, poolSize=1)
     print(str(wordDimension) + " " + language + " " + clas + " is done. PID: " + str(os.getpid()))
 
-    numberFile = corpusPath+language+"/label_"+clas+"_new.txt.number"
+    numberFile = corpusPath+language+"/"+corpusType+"_"+clas+"_new.txt.number"
     fragmentVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/"+clas+"_output_40.txt"
-    indexFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "label_"+clas+"_new.txt.index"
-    sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + "label_"+clas+"_new.txt.sent"
+    indexFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + ""+corpusType+"_"+clas+"_new.txt.index"
+    sentenceVectorFile = cnnOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + ""+corpusType+"_"+clas+"_new.txt.sent"
     genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorFile, representationDim)
     
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
-    indexFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.index"
-    sentFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.sent"
-    numberFile = corpusPath + language + "/label_"+clas+"_new.txt.number"
-    newSentFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.sent.0"
-    newindexFile = cnnOutputPath + branchPath + "label_"+clas+"_new.txt.index.0"
+    indexFile = cnnOutputPath + branchPath + corpusType+"_"+clas+"_new.txt.index"
+    sentFile = cnnOutputPath + branchPath + corpusType+"_"+clas+"_new.txt.sent"
+    numberFile = corpusPath + language + "/"+corpusType+"_"+clas+"_new.txt.number"
+    newSentFile = cnnOutputPath + branchPath +clas+"_"+corpusType+"_embed_" +str.upper(language)+".sent"
+    newindexFile = cnnOutputPath + branchPath +clas+"_"+corpusType+"_index_" +str.upper(language)+".sent"
     AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexFile, representationDim)
                 
 if __name__ == '__main__':
@@ -462,10 +462,16 @@ if __name__ == '__main__':
     classes = ["book", "music", "dvd"]
     wordDimensions = [50]#, 100]
     languages = ["en", "cn"]
-    for wordDimension in wordDimensions:
-        for language in languages:
-            for clas in classes:
-                #SingleProcess(wordDimension, language, clas)
-                p = Process(target=SingleProcess, args=(wordDimension, language, clas))
-                p.start()
-                print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
+    corpusTypes = ["label", "test"]
+    processCount = 0
+    for corpusType in corpusTypes:
+        for wordDimension in wordDimensions:
+            for language in languages:
+                for clas in classes:
+                    #SingleProcess(wordDimension, language, clas)
+                    p = Process(target=SingleProcess, args=(wordDimension, language, clas, corpusType))
+                    p.start()
+                    print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
+                    
+                    processCount += 1
+                    if(processCount % 6 == 0): p.join()

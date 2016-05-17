@@ -1,3 +1,4 @@
+
 def process_dict1(file_name, enTrain, enTest, cnTrain, cnTest):
     bTrain1 = 1
     eTrain1 = enTrain+1
@@ -51,7 +52,7 @@ def similar_(i, lis, tp, length):
             minIndex = j-1
     return dic, minIndex
 
-def process_Wemb(dic2, dic4, tparams, length):
+def process_Wemb(dic2, dic4, tparams, length, oriorpolarityList):
     #tp = tparams['Wemb'].get_value()
     tp = tparams['Wemb']
     # aaa = len(dic2)+len(dic4)
@@ -61,7 +62,9 @@ def process_Wemb(dic2, dic4, tparams, length):
         # if nn % 1000 == 0:
         #     edd = time.time()
         #     print nn, " of ", aaa, edd
-        index_dic, min_index = similar_(i, dic2[i], tp, length)
+        if(oriorpolarityList[i]):
+            index_dic, min_index = similar_(i, dic2[i], tp, length)
+        
         # 1: tp[i, length:] = tp[min_index, length:]
         tp[i-1, :length] = tp[min_index, :length]
         """
@@ -74,7 +77,8 @@ def process_Wemb(dic2, dic4, tparams, length):
         # if nn % 1000 == 0:
         #     edd = time.time()
         #     print nn, " of ", aaa, edd
-        index_dic1, min_index1 = similar_(j, dic4[j], tp, length)
+        if(oriorpolarityList[j]):
+            index_dic1, min_index1 = similar_(j, dic4[j], tp, length)
         # 1: tp[j, length:] = tp[min_index1, length:]
         tp[j-1, :length] = tp[min_index1, :length]
         """
@@ -83,9 +87,11 @@ def process_Wemb(dic2, dic4, tparams, length):
             tp[j, :length] += tp[jj, :length]*index_dic1[jj]
         """
     #tparams['Wemb'].set_value(tp)
-    
-tparams = {}
-tparams['Wemb']
 
-afd, acd = process_dict1('music_wordList.txt', 335388, 146881, 369464, 159125)
-process_Wemb(afd, acd, tparams, 100)
+from loadDict import loadPriorpolarityPosList
+
+tparams = {}
+tparams['Wemb'] = [1, 2,3 , 4, 5]
+afd, acd = process_dict1("G:/liuzhuang/data/music_wordList.txt", 335388, 146881, 369464, 159125)
+priorpolarityPosList = loadPriorpolarityPosList("G:/liuzhuang/data/music_wordList.txt")
+process_Wemb(afd, acd, tparams, 50, priorpolarityPosList)

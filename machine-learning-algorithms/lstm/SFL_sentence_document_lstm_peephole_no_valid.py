@@ -450,7 +450,7 @@ def similar_(i, lis, tp, length):
             minIndex = j-1
     return dic, minIndex
 
-def process_Wemb(dic2, dic4, tparams, length):
+def process_Wemb(dic2, dic4, tparams, length, priorpolarityList):
     tp = tparams['Wemb'].get_value()
     # aaa = len(dic2)+len(dic4)
     # nn = 0
@@ -459,7 +459,8 @@ def process_Wemb(dic2, dic4, tparams, length):
         # if nn % 1000 == 0:
         #     edd = time.time()
         #     print nn, " of ", aaa, edd
-        index_dic, min_index = similar_(i, dic2[i], tp, length)
+        if(priorpolarityList[i]):
+            index_dic, min_index = similar_(i, dic2[i], tp, length)
         # 1: tp[i, length:] = tp[min_index, length:]
         tp[i-1, :length] = tp[min_index, :length]
         """
@@ -472,7 +473,8 @@ def process_Wemb(dic2, dic4, tparams, length):
         # if nn % 1000 == 0:
         #     edd = time.time()
         #     print nn, " of ", aaa, edd
-        index_dic1, min_index1 = similar_(j, dic4[j], tp, length)
+        if(priorpolarityList[i]):
+            index_dic1, min_index1 = similar_(j, dic4[j], tp, length)
         # 1: tp[j, length:] = tp[min_index1, length:]
         tp[j-1, :length] = tp[min_index1, :length]
         """
@@ -532,14 +534,20 @@ def train_lstm(
 ):
     # reload_model='lstm_model_'+category+'.npz',  # Path to a saved model we want to start from.
     reload_model = None  # Path to a saved model we want to start from.
-    saveto='lstm_model_'+category+'.npz'
+    saveto=dataSetPath + 'lstm_model_'+category+'.npz'
     # Model options
     embedName = category+'_'+str(dim_proj)
     model_options = locals().copy()
 
     model_options['dictPath'] = dictPath
-
-
+    
+    enTrain = wcWord(os.path.dirname(dictPath) +"/" + type+"_train_"+category+"_en_"+str(dim_proj - sentimentDim)+".txt")
+    cnTrain = wcWord(os.path.dirname(dictPath)+"/" + type+"_train_"+category+"_cn_"+str(dim_proj - sentimentDim)+".txt")
+    enTest = wcWord(os.path.dirname(dictPath)+"/" + type+"_test_"+category+"_en_"+str(dim_proj - sentimentDim)+".txt")
+    cnTest = wcWord(os.path.dirname(dictPath)+"/" + type+"_test_"+category+"_cn_"+str(dim_proj - sentimentDim)+".txt")
+    wordVectorDim = dim_proj - sentimentDim
+    priorpolarityList = loadPriorpolarityPosList(os.path.dirname(dictPath)+"/" + category +'_wordList.txt')
+    
     print "model options", model_options
 
     load_data, prepare_data = get_dataset(dataset)
@@ -565,7 +573,7 @@ def train_lstm(
     params = init_params(model_options, dim_proj, sentimentDim)
 
     if reload_model:
-        load_params('lstm_model_'+category+'.npz', params)
+        load_params(saveto, params)
 
     # This create Theano Shared Variable from the parameters.
     # Dict name (string) -> Theano Tensor Shared Variable
@@ -625,7 +633,7 @@ def train_lstm(
     try:
         updateTime = 0
 
-        f = open(embedName+'/record.txt', 'w')
+        f = open(dataSetPath+'/record.txt', 'w')
 
         for eidx in xrange(max_epochs):
             n_samples = 0
@@ -677,8 +685,8 @@ def train_lstm(
                     use_noise.set_value(0.)
                     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
                     #process_dict1(file_name, enTrain, enTest, cnTrain, cnTest)
-                    afd, acd = process_dict1(os.path.dirname(dictPath) + category +'_wordList.txt', 335388, 146881, 369464, 159125)
-                    process_Wemb(afd, acd, tparams, 100)
+                    afd, acd = process_dict1(os.path.dirname(dictPath)+"/" + category +'_wordList.txt', enTrain, cnTest, cnTrain, cnTest)
+                    process_Wemb(afd, acd, tparams, priorpolarityList)
                     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
                     train_err = pred_error(f_pred, prepare_data, train, kf)
                     test_err = pred_error(f_pred, prepare_data, test, kf_test)
@@ -700,8 +708,8 @@ def train_lstm(
 
                         # numpy.savetxt('results/'+embedName+'_embedding'+str(dim_proj)+'/train_proj_best.txt', train_proj, fmt='%.4f', delimiter=' ')
                         # numpy.savetxt('paper experiment/'+embedName+'/test_proj_best.txt', test_proj, fmt='%.4f', delimiter=' ')
-                        numpy.savetxt(embedName+'/test_best.txt', test_prob_best, fmt='%.2f', delimiter=' ')
-                        numpy.savetxt(embedName+'/embeddings_best.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
+                        numpy.savetxt(dataSetPath+'test_best.txt', test_prob_best, fmt='%.2f', delimiter=' ')
+                        numpy.savetxt(dataSetPath+'embeddings_best.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
                     print ('Train ', train_err, 'Test ', test_err)
 
@@ -718,11 +726,11 @@ def train_lstm(
             train_prob = pred_probs(f_pred_prob, prepare_data, train, kf_train_sorted)
             test_prob = pred_probs(f_pred_prob, prepare_data, test, kf_test)
 
-            numpy.savetxt(embedName+'/test_proj_'+str(eidx)+'.txt', test_proj, fmt='%.4f', delimiter=' ')
-            numpy.savetxt(embedName+'/train_proj_'+str(eidx)+'.txt', train_proj, fmt='%.4f', delimiter=' ')
+            numpy.savetxt(dataSetPath+'/test_proj_'+str(eidx)+'.txt', test_proj, fmt='%.4f', delimiter=' ')
+            numpy.savetxt(dataSetPath+'/train_proj_'+str(eidx)+'.txt', train_proj, fmt='%.4f', delimiter=' ')
 
             # numpy.savetxt('paper experiment/'+embedName+'/train_prob_'+str(eidx)+'.txt', train_prob, fmt='%.2f', delimiter=' ')
-            numpy.savetxt(embedName+'/test_prob_'+str(eidx)+'.txt', test_prob, fmt='%.2f', delimiter=' ')
+            numpy.savetxt(dataSetPath+'/test_prob_'+str(eidx)+'.txt', test_prob, fmt='%.2f', delimiter=' ')
 
             print 'Seen %d samples' % n_samples
 
@@ -741,8 +749,8 @@ def train_lstm(
 
     use_noise.set_value(0.)
     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
-    afd, acd = process_dict1('music_wordList.txt', 335388, 146881, 369464, 159125)
-    process_Wemb(afd, acd, tparams, 100)
+    afd, acd = process_dict1(os.path.dirname(dictPath) + "/"+ category +'_wordList.txt', enTrain, cnTest, cnTrain, cnTest)
+    process_Wemb(afd, acd, tparams, priorpolarityList)
     """++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
     train_err = pred_error(f_pred, prepare_data, train, kf_train_sorted)
     test_err = pred_error(f_pred, prepare_data, test, kf_test)
@@ -825,16 +833,17 @@ def WordCount(type, category, dimension):
 
 import os
 from wc import wcWord, maxWordLen
+from loadDict import loadPriorpolarityPosList
 
 if __name__ == '__main__':
     # See function train for all possible parameter and there definition.
-    category = 'music'
+    category = 'book'
     dimension = 100
     sentimentDim = 50
     wordDimension = dimension - sentimentDim
     type = 'semantic_sentiment'
     # type = 'semantic'
-    outputDir = "G:/liuzhuang/corpus/TotalOutput/" + str(wordDimension) + "d/" + category + "/"
+    outputDir = "G:/liuzhuang/corpus/TotalOutput_SFL/" + str(wordDimension) + "d/" + category + "/"
     SeriPath = "G:/liuzhuang/corpus/Serializer/"
     dictPath = SeriPath + type + "_" + category +"_dict_"+ str(wordDimension)+".txt"
     if(not os.path.exists(outputDir)):

@@ -87,11 +87,11 @@ def init_params(options, dim, sentimentDim):
     params = OrderedDict()
     # embedding
 
-    randn = numpy.random.rand(options['n_words'],
-                              options['dim_proj'])
-    # params['Wemb'] = numpy.loadtxt('H:/cross-lingual/'+type+'_'+category+'_dict_'+str(dim-sentimentDim)+'.txt', delimiter=' ', dtype='float32')
+    # randn = numpy.random.rand(options['n_words'],
+    #                           options['dim_proj'])
+    params['Wemb'] = numpy.loadtxt(options['dictPath'], delimiter=' ', dtype='float32')
     # params['Wemb'] = params['Wemb'].astype(config.floatX)
-    params['Wemb'] = (0.01 * randn).astype(config.floatX)
+    # params['Wemb'] = (0.01 * randn).astype(config.floatX)
     params = get_layer(options['encoder'])[0](options,
                                               params,
                                               prefix='lstm_zheng')
@@ -421,7 +421,9 @@ def train_lstm(
     dim_proj=-1,  # word embeding dimension and LSTM number of hidden units.
     sentimentDim=-1,
     patience=50,  # Number of epoch to wait before early stop if no progress
-    category='',
+    category='',    
+    dataSetPath = "",
+    dictPath = "",
     max_epochs=-1,  # The maximum number of epoch to run
     dispFreq=10,  # Display to stdout the training progress every N updates
     decay_c=0.,  # Weight decay for the classifier applied to the U weights.
@@ -445,19 +447,19 @@ def train_lstm(
 ):
     # reload_model='lstm_model_'+category+'.npz',  # Path to a saved model we want to start from.
     reload_model = None  # Path to a saved model we want to start from.
-    saveto='lstm_model_'+category+'.npz'
+    saveto=dataSetPath + 'lstm_model_'+category+'.npz'
     # Model options
     embedName = 'thesis_experiment_'+category+'_'+str(dim_proj)
     model_options = locals().copy()
 
-
+    model_options['dictPath'] = dictPath
 
     print "model options", model_options
 
     load_data, prepare_data = get_dataset(dataset)
 
     print 'Loading data'
-    train, test = load_data(path=category+'.pkl', n_words=n_words, maxlen=maxlen)
+    train, test = load_data(path=dataSetPath + category+'.pkl', n_words=n_words, maxlen=maxlen)
     if test_size > 0:
         # The test set is sorted by size, but we want to keep random
         # size example.  So we must select a random selection of the
@@ -477,7 +479,7 @@ def train_lstm(
     params = init_params(model_options, dim_proj, sentimentDim)
 
     if reload_model:
-        load_params('lstm_model_'+category+'.npz', params)
+        load_params(saveto, params)
 
     # This create Theano Shared Variable from the parameters.
     # Dict name (string) -> Theano Tensor Shared Variable
@@ -536,7 +538,7 @@ def train_lstm(
     try:
         updateTime = 0
 
-        f = open(embedName+'/record.txt', 'w')
+        f = open(dataSetPath+'/record.txt', 'w')
 
         for eidx in xrange(max_epochs):
             n_samples = 0
@@ -610,7 +612,7 @@ def train_lstm(
 
                         # numpy.savetxt('results/'+embedName+'_embedding'+str(dim_proj)+'/train_proj_best.txt', train_proj, fmt='%.4f', delimiter=' ')
                         # numpy.savetxt('paper experiment/'+embedName+'/test_proj_best.txt', test_proj, fmt='%.4f', delimiter=' ')
-                        numpy.savetxt(embedName+'/test_best.txt', test_prob_best, fmt='%.2f', delimiter=' ')
+                        numpy.savetxt(dataSetPath+'/test_best.txt', test_prob_best, fmt='%.2f', delimiter=' ')
                         # numpy.savetxt(embedName+'/embeddings_best.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
                     print ('Train ', train_err, 'Test ', test_err)
@@ -624,7 +626,7 @@ def train_lstm(
             # numpy.savetxt(embedName+'/train_proj_'+str(eidx)+'.txt', train_proj, fmt='%.4f', delimiter=' ')
 
             # numpy.savetxt('paper experiment/'+embedName+'/train_prob_'+str(eidx)+'.txt', train_prob, fmt='%.2f', delimiter=' ')
-            numpy.savetxt(embedName+'/test_prob_'+str(eidx)+'.txt', test_prob, fmt='%.2f', delimiter=' ')
+            numpy.savetxt(dataSetPath+'/test_prob_'+str(eidx)+'.txt', test_prob, fmt='%.2f', delimiter=' ')
 
             print 'Seen %d samples' % n_samples
 
@@ -657,10 +659,9 @@ def train_lstm(
                           (end_time - start_time))
     return train_err, test_err
 
-def preprocess(type, category, dimension, dataSetPath = ""):
+def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serializer/", dataSetPath = ""):
     import cPickle
     print("preprocessing...")
-    dataPath = "G:\\liuzhuang\\data\\"
     train_data_x_zheng = []
     train_data_x_ni = []
     train_data_y = []
@@ -705,26 +706,54 @@ def preprocess(type, category, dimension, dataSetPath = ""):
 
     output_file.close()
 
+def WordCount(type, category, dimension):
+    #######################
+    filenames = []
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_test_"+category+"_en_"+str(dimension)+".txt")
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_test_"+category+"_cn_"+str(dimension)+".txt")
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_train_"+category+"_en_"+str(dimension)+".txt")
+    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_train_"+category+"_cn_"+str(dimension)+".txt")
+    wordsnumber=0
+    maxLen = 0
+    for filename in filenames:
+        wordsnumber += wcWord(filename)
+        tmpLen = maxWordLen(filename)
+        if(maxLen < maxWordLen(filename)):
+            maxLen = tmpLen
+    print(wordsnumber)
+    return wordsnumber, maxLen
+    #######################
+
+import os
+from wc import wcWord, maxWordLen
 
 if __name__ == '__main__':
     # See function train for all possible parameter and there definition.
-    category = 'dvd'
-    dimension = 300
-    sentimentDim = 0
-    # type = 'semantic_sentiment'
-    type = 'semantic'
-
-    preprocess(type, category, dimension-sentimentDim)
-
+    category = 'book'
+    dimension = 100
+    sentimentDim = 50
+    wordDimension = dimension - sentimentDim
+    type = 'semantic_sentiment'
+    #type = 'semantic'
+    outputDir = "G:/liuzhuang/corpus/TotalOutput/" + str(wordDimension) + "d/" + category + "/"
+    SeriPath = "G:/liuzhuang/corpus/Serializer/"
+    dictPath = SeriPath + type + "_" + category +"_dict_"+ str(wordDimension)+".txt"
+    if(not os.path.exists(outputDir)):
+        os.makedirs(outputDir)
+    
+    preprocess(type, category, wordDimension,SeriPath, outputDir)
+    n_words,maxlen = WordCount(type, category, wordDimension);
     train_lstm(
         type=type,
         dim_proj=dimension,
         sentimentDim=sentimentDim,
         category=category,
-        max_epochs=15,
-        n_words=77570,
-        maxlen=1280,
-        decay_c=0.0001,
+        dataSetPath=outputDir,
+        dictPath = dictPath,
+        max_epochs=25,
+        n_words=n_words,
+        maxlen=maxlen + 1,
+        decay_c=0.001,
         test_size=4000,
         alpha=1,
         beta=1,

@@ -61,17 +61,21 @@ import time
 if __name__ == "__main__":
 
     classes = ["book", "music", "dvd"]
-    wordDimensions = [50, 100]
+    wordDimensions = [50]#, 100]
     languages = ["en", "cn"]
     
     corpusPath = "G:/liuzhuang/corpus/"
-    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output/"
 
     for clas in classes:
         for wordDimension in wordDimensions:
             for language in languages:
                 vectorsDict = corpusPath + "/"+language+"_vectorTable/"+language+"_vectors_"+ str(wordDimension) +".txt"
-                wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract"
+                wordslist = corpusPath + language + "/label_"+clas+"_new.txt.extract"
                 p = Process(target=generate, args=(wordslist, vectorsDict, wordDimension))
                 p.start()
                 print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
+                
+                wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract"
+                p1 = Process(target=generate, args=(wordslist, vectorsDict, wordDimension))
+                p1.start()
+                print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p1.ident))
