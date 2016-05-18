@@ -435,15 +435,26 @@ def process_dict1(file_name, enTrain, enTest, cnTrain, cnTest):
     fp.close()
     return dic2, dic4
 
+def distanceCos(vectorA, vectorB):
+    lenA = numpy.sqrt(vectorA **2)
+    lenB = numpy.sqrt(vectorB **2)
+    dotProd = numpy.dot(vectorA, vectorB)
+    distance = dotProd / (lenA * lenB)
+    return distance
 
-
+def distanceDot(vectorA, vectorB):
+    distance = numpy.dot(vectorA, vectorB)
+    return distance
+    
 def similar_(i, lis, tp, length):
     dic = {}
     minn = numpy.inf
     minIndex = -1
     for j in lis:
         # 1: m = numpy.exp(numpy.dot(tp[i, length:], tp[j, length:]))
-        m = numpy.sqrt(numpy.sum((tp[i-1, length:]-tp[j-1, length:])**2))
+        # m = numpy.sqrt(numpy.sum((tp[i-1, length:]-tp[j-1, length:])**2))
+        m = distanceCos(tp[i-1, length:], tp[j-1, length:])
+        #m = distanceDot(vectorA, vectorB)
         dic[j-1] = m
         if m <= minn:
             minn = m

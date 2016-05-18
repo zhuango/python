@@ -27,7 +27,7 @@ def AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexF
                 if(int(indexRecord[0]) == pragNumber and int(indexRecord[1]) == i):
                     newindex.write(indexLine + "\n")
                     senVectorStr = sent.readline().strip()
-                    newSent.write(senVectorStr + "\n")
+                    newSent.write(senVectorStr.strip() + "\n")
                     
                     indexLine = index.readline().strip()
                     indexRecord = indexLine.split(" ")
@@ -35,13 +35,13 @@ def AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexF
                     newindex.write(str(pragNumber) + " " + str(i) + "\n")
                     for j in range(representationDim):
                         senVectorStr += "0.0 "
-                    newSent.write(senVectorStr + "\n")
+                    newSent.write(senVectorStr.strip() + "\n")
             except Exception:
                 #print("pragNumber: " + str(pragNumber))
                 newindex.write(str(pragNumber) + " " + str(i) + "\n")
                 for j in range(representationDim):
                     senVectorStr += "0.0 "
-                newSent.write(senVectorStr + "\n")
+                newSent.write(senVectorStr.strip() + "\n")
                 
     index.close()
     sent.close()
