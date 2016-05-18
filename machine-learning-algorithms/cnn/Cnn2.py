@@ -422,12 +422,17 @@ import os
 import time
 from AddZerosVectorToSent import AddZerosVectorToSent
 from genSentenceVector import genSentenceVector
+import json
 
-def SingleProcess(wordDimension, language, clas, corpusType):
+def SingleProcess(wordDimension, language, clas, corpusType):    
+    cnnJson = open("cnn.json", "r")
+    inputInfo = json.load(cnnJson)
+    cnnJson.close()
+
     posDimension = 0
     representationDim = 50    
-    corpusPath = "G:/liuzhuang/corpus/"
-    cnnOutputPath = "G:/liuzhuang/corpus/cnn_output_" + corpusType + "/"
+    corpusPath = inputInfo["CorpusPath"]
+    cnnOutputPath = corpusPath + "cnn_output_" + corpusType + "/"
 
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(cnnOutputPath + branchPath)):
