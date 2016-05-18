@@ -3,32 +3,33 @@ import numpy
 
 lengthOfFragment = 5
 
-def generate(wordslist, vectorsDict, dimension):
+def genVectorTable(vectorsDict):
+    ####################################
+    linenumber = 0
+    ####################################
+    vectors = {}
+    with open(vectorsDict, 'r') as f:
+        for line in f:
+            linenumber += 1   #
+            if (linenumber % 5000 == 0): print(linenumber) #
+            vals = line.rstrip().split(' ')
+            vectors[vals[0]] = [float(x) for x in vals[1:]]
+    return vectors
+
+def generate(wordslist, vectors, dimension):
     parser = argparse.ArgumentParser()
     parser.add_argument('--vo', default=wordslist, type=str)
-    parser.add_argument('--ve', default=vectorsDict, type=str)
     parser.add_argument('--di', default=dimension, type=str)
     args = parser.parse_args()
     
     wordslist = args.vo
-    vectorsDict = args.ve
     dimension = int(args.di)
     # with open(args.vo, 'r') as f:
     #     for line in f:
     #         for word in line.rstrip().split(' ')
     #             words.append(word)
     # words = [x.rstrip().split(' ')[0] for x in f.readlines()]
-    ####################################
-    linenumber = 0
-    ####################################
-        
-    with open(vectorsDict, 'r') as f:
-        vectors = {}
-        for line in f:
-            linenumber += 1   #
-            if (linenumber % 1000 == 0): print(linenumber) #
-            vals = line.rstrip().split(' ')
-            vectors[vals[0]] = [float(x) for x in vals[1:]]
+    
     ####################################
     linenumber = 0
     notFoundCount = 0
@@ -39,7 +40,7 @@ def generate(wordslist, vectorsDict, dimension):
         for line in f:
             fragmentVector=""
             linenumber += 1  # ################################
-            if (linenumber % 1000 == 0): print(linenumber)# 
+            if (linenumber % 5000 == 0): print(linenumber)# 
             for word in line.rstrip().split(' '):
                 try:
                     for elem in vectors[word]:
@@ -64,18 +65,21 @@ if __name__ == "__main__":
     wordDimensions = [50]#, 100]
     languages = ["en", "cn"]
     
-    corpusPath = "G:/liuzhuang/corpus/"
+    corpusPath = "/home/laboratory/corpus/"
 
-    for clas in classes:
-        for wordDimension in wordDimensions:
-            for language in languages:
-                vectorsDict = corpusPath + "/"+language+"_vectorTable/"+language+"_vectors_"+ str(wordDimension) +".txt"
+    for wordDimension in wordDimensions:
+        for language in languages:
+            vectorsDict = corpusPath + "/"+language+"_vectorTable/"+language+"_vectors_"+ str(wordDimension) +".txt"
+            vectors = genVectorTable(vectorsDict)
+            for clas in classes:
+                
                 wordslist = corpusPath + language + "/label_"+clas+"_new.txt.extract"
-                p = Process(target=generate, args=(wordslist, vectorsDict, wordDimension))
+                p = Process(target=generate, args=(wordslist, vectors, wordDimension))
                 p.start()
                 print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
-                
+                p.join()
                 wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract"
-                p1 = Process(target=generate, args=(wordslist, vectorsDict, wordDimension))
+                p1 = Process(target=generate, args=(wordslist, vectors, wordDimension))
                 p1.start()
                 print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p1.ident))
+                p1.join()
