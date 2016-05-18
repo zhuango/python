@@ -707,6 +707,7 @@ def train_lstm(
 
                     history_errs.append([test_err])
 
+                    print('Accuracy:' + str(1-float(test_err)))
                     f.write('Accuracy:' + str(1-float(test_err)))
                     f.write('\n')
 
@@ -824,13 +825,13 @@ def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serial
 
     output_file.close()
 
-def WordCount(type, category, dimension):
+def WordCount(SeriPath, type, category, dimension):
     #######################
     filenames = []
-    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_test_"+category+"_en_"+str(dimension)+".txt")
-    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_test_"+category+"_cn_"+str(dimension)+".txt")
-    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_train_"+category+"_en_"+str(dimension)+".txt")
-    filenames.append("G:/liuzhuang/corpus/Serializer/" + type+"_train_"+category+"_cn_"+str(dimension)+".txt")
+    filenames.append(SeriPath + type+"_test_"+category+"_en_"+str(dimension)+".txt")
+    filenames.append(SeriPath + type+"_test_"+category+"_cn_"+str(dimension)+".txt")
+    filenames.append(SeriPath + type+"_train_"+category+"_en_"+str(dimension)+".txt")
+    filenames.append(SeriPath + type+"_train_"+category+"_cn_"+str(dimension)+".txt")
     wordsnumber=0
     maxLen = 0
     for filename in filenames:
@@ -845,8 +846,14 @@ def WordCount(type, category, dimension):
 import os
 from wc import wcWord, maxWordLen
 from loadDict import loadPriorpolarityPosList
+import json 
 
 if __name__ == '__main__':
+
+    f = open('sflLSTM.json', 'r')
+    inputInfo = json.load(f)
+    f.close()
+    
     # See function train for all possible parameter and there definition.
     category = 'book'
     dimension = 100
@@ -854,15 +861,15 @@ if __name__ == '__main__':
     wordDimension = dimension - sentimentDim
     type = 'semantic_sentiment'
     # type = 'semantic'
-    outputDir = "G:/liuzhuang/corpus/TotalOutput_SFL/" + str(wordDimension) + "d/" + category + "/"
-    SeriPath = "G:/liuzhuang/corpus/Serializer/"
+    outputDir = inputInfo["TotalOutputDir"] + str(wordDimension) + "d/" + category + "/"
+    SeriPath = inputInfo["SerializerDir"]
     dictPath = SeriPath + type + "_" + category +"_dict_"+ str(wordDimension)+".txt"
     if(not os.path.exists(outputDir)):
         os.makedirs(outputDir)
 
     preprocess(type, category, wordDimension,SeriPath, outputDir)
     
-    n_words,maxlen = WordCount(type, category, wordDimension);
+    n_words,maxlen = WordCount(SeriPath, type, category, wordDimension);
     train_lstm(
         type=type,
         dim_proj=dimension,
