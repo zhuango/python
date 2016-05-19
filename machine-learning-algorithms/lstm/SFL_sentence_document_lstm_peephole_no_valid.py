@@ -436,8 +436,8 @@ def process_dict1(file_name, enTrain, enTest, cnTrain, cnTest):
     return dic2, dic4
 
 def distanceCos(vectorA, vectorB):
-    lenA = numpy.sqrt(vectorA **2)
-    lenB = numpy.sqrt(vectorB **2)
+    lenA = numpy.sqrt(numpy.dot(vectorA, vectorA))
+    lenB = numpy.sqrt(numpy.dot(vectorB, vectorB))
     dotProd = numpy.dot(vectorA, vectorB)
     distance = dotProd / (lenA * lenB)
     return distance

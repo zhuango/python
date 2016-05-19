@@ -12,22 +12,23 @@ import java.util.HashMap;
 public class SeqToNumSemanticSentiment {
 
 	public static int dimension = 50;
-	public static String type = "dvd";
+	public static String type = "book";
 	public static int wordNum = 0;
 	public static String sentiDim = "50d/";
 	public static int num = 1;
 	
 	public static void main(String[] args) throws IOException{
-		String IndexEmbedPath = "G:/liuzhuang/corpus/data/";
-		String corpusPath_en = "G:/liuzhuang/corpus/en/";
-		String corpusPath_cn = "G:/liuzhuang/corpus/cn/";
-		String SeriOutput ="G:/liuzhuang/corpus/Serializer/";
+		String corpusPath = "/home/laboratory/corpus/";
+		String IndexEmbedPath = corpusPath + "data/";
+		String corpusPath_en = corpusPath + "en/";
+		String corpusPath_cn = corpusPath + "cn/";
+		String SeriOutput =corpusPath + "Serializer/";
 		// extract dict，vector = word vector + sentence vectro.
-		String EnEmbedPath = "G:/liuzhuang/corpus/en_vectorTable/en_vectors_"+Integer.toString(dimension)+".txt";
-		String CnEmbedPath = "G:/liuzhuang/corpus/cn_vectorTable/cn_vectors_"+Integer.toString(dimension)+".txt";
-		String wordPath = "G:/liuzhuang/corpus/Serializer/"+type+"_wordList_"+Integer.toString(dimension)+".txt";
-		String enDictPath = "G:/liuzhuang/corpus/en/SentiWordList_en.txt";
-		String cnDictPath = "G:/liuzhuang/corpus/cn/SentiWordList_cn.txt";
+		String EnEmbedPath = corpusPath + "en_vectorTable/en_vectors_"+Integer.toString(dimension)+".txt";
+		String CnEmbedPath = corpusPath + "cn_vectorTable/cn_vectors_"+Integer.toString(dimension)+".txt";
+		String wordPath = SeriOutput+type+"_wordList_"+Integer.toString(dimension)+".txt";
+		String enDictPath = corpusPath +"en/SentiWordList_en.txt";
+		String cnDictPath = corpusPath +"cn/SentiWordList_cn.txt";
 		
 
 		int tempNum = 0;
@@ -59,7 +60,10 @@ public class SeqToNumSemanticSentiment {
 		String desTestCnPath = SeriOutput + "semantic_sentiment_test_"+type+"_cn_"+Integer.toString(dimension)+".txt";
 		
 		String dictPath = SeriOutput + "semantic_sentiment_"+type+"_dict_"+Integer.toString(dimension)+".txt";
-			
+		
+		ArrayList<String> enSentiWord = loadSentiList(enDictPath);
+		ArrayList<String> cnSentiWord = loadSentiList(cnDictPath);
+		
 		HashMap<String, String> gloveEmbedding= loadEmbeddings(EnEmbedPath);
 		HashMap<String, String> word2VecEmbedding= loadEmbeddings(CnEmbedPath);
 		//train_en
@@ -75,16 +79,16 @@ public class SeqToNumSemanticSentiment {
 		ArrayList<String> wordIndex = new ArrayList<String>();
 		HashMap<String,String> wordList = new HashMap<String, String>();
 		
-		extract(srcTrainEnPath, desTrainEnPath, gloveEmbedding, trainEnSentEmbedding, dict, wordList, wordIndex);
+		extract(srcTrainEnPath, desTrainEnPath, gloveEmbedding, trainEnSentEmbedding, dict, wordList, wordIndex, enSentiWord);
 		System.out.println(wordNum-tempNum);
 		tempNum = wordNum; 
-		extract(srcTestEnPath, desTestEnPath, gloveEmbedding, testEnSentEmbedding, dict, wordList, wordIndex);
+		extract(srcTestEnPath, desTestEnPath, gloveEmbedding, testEnSentEmbedding, dict, wordList, wordIndex,enSentiWord);
 		System.out.println(wordNum-tempNum);
 		tempNum = wordNum; 
-		extract(srcTrainCnPath, desTrainCnPath, word2VecEmbedding, trainCnSentEmbedding, dict, wordList, wordIndex);
+		extract(srcTrainCnPath, desTrainCnPath, word2VecEmbedding, trainCnSentEmbedding, dict, wordList, wordIndex, cnSentiWord);
 		System.out.println(wordNum-tempNum);
 		tempNum = wordNum; 
-		extract(srcTestCnPath, desTestCnPath, word2VecEmbedding, testCnSentEmbedding, dict, wordList, wordIndex);
+		extract(srcTestCnPath, desTestCnPath, word2VecEmbedding, testCnSentEmbedding, dict, wordList, wordIndex, cnSentiWord);
 		System.out.println(wordNum-tempNum);
 		tempNum = wordNum; 
 		
@@ -102,9 +106,23 @@ public class SeqToNumSemanticSentiment {
 		dictWriter.close();
 	}
 
+	public static ArrayList<String> loadSentiList(String dictPath) throws IOException{
+		//load sentiment word list.
+		BufferedReader reader = new BufferedReader(new FileReader(new File(dictPath)));
+		ArrayList<String> wordList = new ArrayList<String>();
+		String line = "";
+		while((line = reader.readLine())!=null){
+			line = line.trim();
+			wordList.add(line);
+		}
+		
+		reader.close();
+		return wordList;
+	}
+
 	public static void extract(String srcPath,
 			String desPath, HashMap<String, String> gloveEmbedding,
-			HashMap<String, String> sentEmbedding, ArrayList<String> dict, HashMap<String, String> wordList, ArrayList<String> list) throws IOException{
+			HashMap<String, String> sentEmbedding, ArrayList<String> dict, HashMap<String, String> wordList, ArrayList<String> list, ArrayList<String> sentiList) throws IOException{
 
 		int rowNum = 0;
 		System.out.println("Extracting...");
@@ -146,10 +164,18 @@ public class SeqToNumSemanticSentiment {
 			for(int i = 0; i < array.length; i++){
 				outputLine = outputLine + Integer.toString(++wordNum) + " ";
 				if(wordList.containsKey(array[i])){
-					list.add(wordList.get(array[i]));
+					String isSentiWord = "0";
+					if(sentiList.contains(array[i])){
+						isSentiWord = "1";
+					}
+					list.add(wordList.get(array[i]) + " " +isSentiWord);
 				}else{
 					wordList.put(array[i], "***"+Integer.toString(num++));
-					list.add(wordList.get(array[i]));
+					String isSentiWord = "0";
+					if(sentiList.contains(array[i])){
+						isSentiWord = "1";
+					}
+					list.add(wordList.get(array[i]) + " " +isSentiWord);
 				}
 
 				String embedding = "";

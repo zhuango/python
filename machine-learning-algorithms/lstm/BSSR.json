@@ -1,0 +1,6 @@
+{
+    "CorpusPath": "/home/laboratory/corpus/",
+    "LstmOutputPath": "/home/laboratory/corpus/lstm_output/"
+    // "CorpusPath": "G:/liuzhuang/corpus/",
+    // "LstmOutputPath": "G:/liuzhuang/corpus/lstm_output/"
+}

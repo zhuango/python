@@ -1,4 +1,6 @@
 {
-    "TotalOutputDir": "G:/liuzhuang/corpus/TotalOutput/",
-    "SerializerDir": "G:/liuzhuang/corpus/Serializer/"
+    "TotalOutputDir": "/home/laboratory/corpus/TotalOutput/",
+    "SerializerDir": "/home/laboratory/corpus/Serializer/"
+    // "TotalOutputDir": "G:/liuzhuang/corpus/TotalOutput/",
+    // "SerializerDir": "G:/liuzhuang/corpus/Serializer/"
 }

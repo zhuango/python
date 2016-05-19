@@ -680,10 +680,11 @@ def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_si
 
     output_file.close()
 
-def SingleProcess(clas, language, wordDimension, corpusType):
+def SingleProcess(corpusRootPath, lstmOutputRootPath, clas, language, wordDimension, corpusType):
     
-    corpusPath = "/home/laboratory/corpus/"
-    lstmOutputPath = "/home/laboratory/corpus/lstm_output" + corpusType+ "/"
+    corpusPath = corpusRootPath
+    lstmOutputPath = lstmOutputRootPath + corpusType+ "/"
+    
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(lstmOutputPath + branchPath)):
         os.makedirs(lstmOutputPath + branchPath)
@@ -718,7 +719,17 @@ def SingleProcess(clas, language, wordDimension, corpusType):
     AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexFile, representationDim)
                 
 from multiprocessing import Process
+import json
+
 if __name__ == '__main__':
+
+    f = open('BSSR.json', 'r')
+    inputInfo = json.load(f)
+    f.close()
+
+    corpusRootPath = inputInfo['CorpusPath']
+    lstmOutputRootPath = inputInfo['LstmOutputPath']
+
     # See function train for all possible parameter and there definition.
     category = 'dvd'
     dimension = 300
@@ -737,7 +748,7 @@ if __name__ == '__main__':
                 for wordDimension in wordDimensions:
                     processCount += 1
                     #SingleProcess(clas, language, wordDimension)#
-                    p = Process(target=SingleProcess, args=(clas, language, wordDimension,corpusType))
+                    p = Process(target=SingleProcess, args=(corpusRootPath, lstmOutputRootPath, clas, language, wordDimension,corpusType))
                     p.start()
                     print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
                     if(processCount % 3 == 0):  p.join()
