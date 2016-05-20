@@ -774,8 +774,8 @@ if __name__ == '__main__':
     f.close()
     
     # See function train for all possible parameter and there definition.
-    categories = ['book', 'dvd', 'music']
-    dimension = 250 # 100, 150, 
+    categories = ['book']#, 'dvd', 'music']
+    dimension = 100 # 100, 150, 
     sentimentDim = 50
     type = 'semantic_sentiment'
     #type = 'semantic'
@@ -783,10 +783,9 @@ if __name__ == '__main__':
     
     TotalOutputDir = inputInfo["TotalOutputDir"]
     SerializerDir = inputInfo["SerializerDir"]
-   
+
     for category in categories:
         argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1)
-        SingleProcess(type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1)
-        p = Process(target=SingleProcess, args=argsforProcess)
-        p.strat()
-        print(clas + " is running. PID: " + str(p.ident))
+        p = Process(target=SingleProcess, args=(type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1))
+        p.start()
+        print(category + " is running. PID: " + str(p.ident))
