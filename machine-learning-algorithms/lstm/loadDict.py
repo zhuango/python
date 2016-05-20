@@ -1,3 +1,4 @@
+import collections
 
 # dictionary format: word postive/negative number
 def loadDict(dictName):
@@ -22,7 +23,7 @@ def loadDictYang(dictName, wordpos):
     # dict format relative.
     wordPos = wordpos
     
-    wordDict = {}
+    wordDict = collections.defaultdict(lambda:-1)
     
     with open(dictName, "r") as dictFile:
         for line in dictFile:
@@ -59,21 +60,27 @@ def formatDict(dictfileName, wordindex, priIndex, positiveTag):
     oldDict = open(dictfileName, "r")
     for line in oldDict:
         attributes = line.strip().split(" ")
+        for attriIndex in range(0, len(attributes)):
+            if(attributes[attriIndex].isspace()):
+                del attributes[attriIndex]
         if(attributes[priIndex] == positiveTag):
             newDict.write(attributes[wordindex] + " " + newPostiveTag + "\n")
         else:
             newDict.write(attributes[wordindex] + " " + newNegativeTag + "\n")
+    newDict.close()
+    oldDict.close()
     
 if __name__ == "__main__":
     # dictfilename = "G:/liuzhuang/data/music_wordList.txt"
     # wordDicti = loadPriorpolarityPosList(dictfilename)
     # count = 0;
-
+    #formatDict("/home/laboratory/corpus/CN_Jixing.txt",1, 3, "p")
     # print(wordDicti[16])
-    yangDictEN = loadDictYang("/home/laboratory/corpus/EN_Jixing.txt", 0)
-    newDict = loadDictYang("/home/laboratory/corpus/en (copy)/CHIENDict.txt", 0)
-
-    languages = ['en']#, 'cn']
+    standardDict = loadDict("/home/laboratory/corpus/CN_Jixing.txt.newDict")
+    yangDict = loadDictYang("/home/laboratory/corpus/CN_Jixing.txt.newDict", 0)
+    newDict = loadDictYang("/home/laboratory/corpus/cn/CHICNDict.txt", 0)
+    
+    languages = ['cn']#, 'cn']
     classes = ['book', 'dvd', 'music']
     useTypes = ['test', 'label']
     corpusList = []
@@ -87,19 +94,17 @@ if __name__ == "__main__":
             for line in corpus:
                 words = line.strip().split(" ")
                 for word in words:
-                    if(word in yangDictEN):
-                        yangDictEN[word] += 1
-                        
-    
+                    if(word in yangDict):
+                        yangDict[word] += 1
+
     wordCount = open("/home/laboratory/corpus/newCNWord", "w")
-    print("words which lost in OLD dict.These words are in new dict.")
-    for key in yangDictEN:
+    for key in yangDict:
         if(key not in newDict):
-            try:
-                if yangDictEN[key] > 1000:
-                    wordCount.write(key + " " + str(yangDictEN[key]) + "\n")
-            except Exception:
-                continue
+            if yangDict[key] >= 0:
+                if standardDict[key]:
+                    wordCount.write(key + " " + "positive" +" " + str(yangDict[key]) + "\n")
+                else:
+                    wordCount.write(key + " " + "negative" +" " + str(yangDict[key]) + "\n")
     wordCount.close()
     
     # startoccur = 100

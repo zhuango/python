@@ -80,7 +80,7 @@ if __name__ == "__main__":
                 p = Process(target=generate, args=(wordslist, vectors, wordDimension))
                 p.start()
                 print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
-                p.join()
+                #p.join()
                 
                 wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract"
                 p1 = Process(target=generate, args=(wordslist, vectors, wordDimension))

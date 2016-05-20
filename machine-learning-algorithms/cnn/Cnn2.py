@@ -424,15 +424,12 @@ from AddZerosVectorToSent import AddZerosVectorToSent
 from genSentenceVector import genSentenceVector
 import json
 
-def SingleProcess(wordDimension, language, clas, corpusType):    
-    cnnJson = open("cnn.json", "r")
-    inputInfo = json.load(cnnJson)
-    cnnJson.close()
+def SingleProcess(CorpusPath, CnnOutputPath, wordDimension, language, clas, corpusType):
 
     posDimension = 0
     representationDim = 50    
-    corpusPath = inputInfo["CorpusPath"]
-    cnnOutputPath = corpusPath + "cnn_output_" + corpusType + "/"
+    corpusPath = CorpusPath
+    cnnOutputPath = CnnOutputPath + corpusType + "/"
 
     branchPath = str(wordDimension)+"d/"+language+"/"+clas+"/"
     if(not os.path.exists(cnnOutputPath + branchPath)):
@@ -463,8 +460,15 @@ def SingleProcess(wordDimension, language, clas, corpusType):
     AddZerosVectorToSent(indexFile, sentFile, numberFile, newSentFile, newindexFile, representationDim)
                 
 if __name__ == '__main__':
+  
+    cnnJson = open("cnn.json", "r")
+    inputInfo = json.load(cnnJson)
+    cnnJson.close()
 
-    classes = ["book", "music", "dvd"]
+    corpusRootPath = inputInfo["CorpusPath"]
+    cnnOutputRootPath = inputInfo["CnnOutputPath"]
+
+    classes = ["book"]#, "music", "dvd"]
     wordDimensions = [50]#, 100]
     languages = ["en", "cn"]
     corpusTypes = ["label", "test"]
@@ -474,7 +478,7 @@ if __name__ == '__main__':
             for language in languages:
                 for clas in classes:
                     #SingleProcess(wordDimension, language, clas)
-                    p = Process(target=SingleProcess, args=(wordDimension, language, clas, corpusType))
+                    p = Process(target=SingleProcess, args=(corpusRootPath, cnnOutputRootPath, wordDimension, language, clas, corpusType))
                     p.start()
                     print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
                     

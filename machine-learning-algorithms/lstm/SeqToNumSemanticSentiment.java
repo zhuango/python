@@ -18,8 +18,12 @@ public class SeqToNumSemanticSentiment {
 	public static int num = 1;
 	
 	public static void main(String[] args) throws IOException{
-		String corpusPath = "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/";
-		String vectorTablePath = "G:/liuzhuang/corpus/";
+		//-XX:-UseGCOverheadLimit
+		//String corpusPath = "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/";
+		//String vectorTablePath = "G:/liuzhuang/corpus/";
+		
+		String corpusPath = "/home/laboratory/corpus/";
+		String vectorTablePath = "/home/laboratory/corpus/";
 		
 		String IndexEmbedPath = corpusPath + "data/";
 		String corpusPath_en = corpusPath + "en/";
