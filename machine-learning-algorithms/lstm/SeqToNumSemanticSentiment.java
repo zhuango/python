@@ -18,14 +18,16 @@ public class SeqToNumSemanticSentiment {
 	public static int num = 1;
 	
 	public static void main(String[] args) throws IOException{
-		String corpusPath = "/home/laboratory/corpus/";
+		String corpusPath = "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/";
+		String vectorTablePath = "G:/liuzhuang/corpus/";
+		
 		String IndexEmbedPath = corpusPath + "data/";
 		String corpusPath_en = corpusPath + "en/";
 		String corpusPath_cn = corpusPath + "cn/";
 		String SeriOutput =corpusPath + "Serializer/";
 		// extract dict，vector = word vector + sentence vectro.
-		String EnEmbedPath = corpusPath + "en_vectorTable/en_vectors_"+Integer.toString(dimension)+".txt";
-		String CnEmbedPath = corpusPath + "cn_vectorTable/cn_vectors_"+Integer.toString(dimension)+".txt";
+		String EnEmbedPath = vectorTablePath + "en_vectorTable/en_vectors_"+Integer.toString(dimension)+".txt";
+		String CnEmbedPath = vectorTablePath + "cn_vectorTable/cn_vectors_"+Integer.toString(dimension)+".txt";
 		String wordPath = SeriOutput+type+"_wordList_"+Integer.toString(dimension)+".txt";
 		String enDictPath = corpusPath +"en/SentiWordList_en.txt";
 		String cnDictPath = corpusPath +"cn/SentiWordList_cn.txt";

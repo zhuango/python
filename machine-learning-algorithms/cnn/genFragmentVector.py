@@ -65,11 +65,14 @@ if __name__ == "__main__":
     wordDimensions = [50]#, 100]
     languages = ["en", "cn"]
     
+    #corpusPath = "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/"
     corpusPath = "/home/laboratory/corpus/"
-
+    #vectorTablePath = "G:/liuzhuang/corpus/"
+    vectorTablePath = "/home/laboratory/corpus/"
+    
     for wordDimension in wordDimensions:
         for language in languages:
-            vectorsDict = corpusPath + "/"+language+"_vectorTable/"+language+"_vectors_"+ str(wordDimension) +".txt"
+            vectorsDict = vectorTablePath + "/"+language+"_vectorTable/"+language+"_vectors_"+ str(wordDimension) +".txt"
             vectors = genVectorTable(vectorsDict)
             for clas in classes:
                 
@@ -78,6 +81,7 @@ if __name__ == "__main__":
                 p.start()
                 print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
                 p.join()
+                
                 wordslist = corpusPath + language + "/test_"+clas+"_new.txt.extract"
                 p1 = Process(target=generate, args=(wordslist, vectors, wordDimension))
                 p1.start()

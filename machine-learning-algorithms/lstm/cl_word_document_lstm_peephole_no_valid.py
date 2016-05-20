@@ -725,25 +725,21 @@ def WordCount(SeriPath, type, category, dimension):
     return wordsnumber, maxLen
     #######################
 
-import os
-from wc import wcWord, maxWordLen
-import json
-
-if __name__ == '__main__':
-
-    f = open('clLSTM.json', 'r')
-    inputInfo = json.load(f)
-    f.close()
+def SingleProcess(
+    type, 
+    category,
+    dimension, 
+    sentimentDim, 
+    SerializerDir, 
+    TotalOutputDir, 
+    Alpha, 
+    Beta
+):
     
-    # See function train for all possible parameter and there definition.
-    category = 'book'
-    dimension = 100
-    sentimentDim = 50
     wordDimension = dimension - sentimentDim
-    type = 'semantic_sentiment'
-    #type = 'semantic'
-    outputDir = inputInfo["TotalOutputDir"] + str(wordDimension) + "d/" + category + "/"
-    SeriPath = inputInfo["SerializerDir"]
+    
+    outputDir = TotalOutputDir + str(wordDimension) + "d/" + category + "/"
+    SeriPath = SerializerDir
     dictPath = SeriPath + type + "_" + category +"_dict_"+ str(wordDimension)+".txt"
     if(not os.path.exists(outputDir)):
         os.makedirs(outputDir)
@@ -762,6 +758,35 @@ if __name__ == '__main__':
         maxlen=maxlen + 1,
         decay_c=0.001,
         test_size=4000,
-        alpha=1,
-        beta=1,
+        alpha=Alpha,#2, 4, 6, 8, 10
+        beta=Beta
     )
+
+import os
+from wc import wcWord, maxWordLen
+import json
+from multiprocessing import Process
+
+if __name__ == '__main__':
+
+    f = open('clLSTM.json', 'r')
+    inputInfo = json.load(f)
+    f.close()
+    
+    # See function train for all possible parameter and there definition.
+    categories = ['book', 'dvd', 'music']
+    dimension = 250 # 100, 150, 
+    sentimentDim = 50
+    type = 'semantic_sentiment'
+    #type = 'semantic'
+    alphaes = [1, 2, 4, 6, 8, 10]
+    
+    TotalOutputDir = inputInfo["TotalOutputDir"]
+    SerializerDir = inputInfo["SerializerDir"]
+   
+    for category in categories:
+        argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1)
+        SingleProcess(type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1)
+        p = Process(target=SingleProcess, args=argsforProcess)
+        p.strat()
+        print(clas + " is running. PID: " + str(p.ident))

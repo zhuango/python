@@ -56,3 +56,8 @@ for value in raw_data:
         
 print("raw_data = ", raw_data)
 print("filtered_data = ", filtered_data)
+
+import collections
+
+model = collections.defaultdict(lambda: 1)
+print(model["erw"])
