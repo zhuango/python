@@ -21,7 +21,7 @@ def genSentenceVector(numberFile, fragmentVectorFile, indexFile, sentenceVectorF
         for line in psnumber:
             record = line.strip().split(" ")
             if(len(record) == 0): break
-            if(record[0] != "end"):
+            if(str.lower(record[0]) != "end"):
                 lineN = int(record[1])
                 if lineN in fragCountInEachSentence.keys():
                     fragCountInEachSentence[lineN] += 1
