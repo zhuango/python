@@ -468,7 +468,7 @@ if __name__ == '__main__':
     corpusRootPath = inputInfo["CorpusPath"]
     cnnOutputRootPath = inputInfo["CnnOutputPath"]
 
-    classes = ["book"]#, "music", "dvd"]
+    classes = ["music"]#, "book", "dvd"]
     wordDimensions = [50]#, 100]
     languages = ["en", "cn"]
     corpusTypes = ["label", "test"]
@@ -483,4 +483,5 @@ if __name__ == '__main__':
                     print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
                     
                     processCount += 1
-                    if(processCount % 6 == 0): p.join()
+                    #if(processCount % 6 == 0): p.join()
+                    p.join() # one by one.

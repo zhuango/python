@@ -669,8 +669,8 @@ def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serial
     test_data_x_zheng = []
     test_data_x_ni = []
     test_data_y = []
-    train_vec_file1 = open(dataPath+type+'_train_'+category+'_en_'+str(dimension)+'.txt', 'r')
-    train_vec_file2 = open(dataPath+type+'_train_'+category+'_cn_'+str(dimension)+'.txt', 'r')
+    train_vec_file1 = open(dataPath+type+'_train_'+category+'_en.txt', 'r')
+    train_vec_file2 = open(dataPath+type+'_train_'+category+'_cn.txt', 'r')
     train_label_file = open(dataPath + 'train_'+category+'_label.txt', 'r')
     for i in range(0, 4000):
         vec_line1 = train_vec_file1.readline()
@@ -684,8 +684,8 @@ def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serial
         else:
             train_data_y.extend([0])
 
-    test_vec_file1 = open(dataPath+type+'_test_'+category+'_en_'+str(dimension)+'.txt', 'r')
-    test_vec_file2 = open(dataPath+type+'_test_'+category+'_cn_'+str(dimension)+'.txt', 'r')
+    test_vec_file1 = open(dataPath+type+'_test_'+category+'_en.txt', 'r')
+    test_vec_file2 = open(dataPath+type+'_test_'+category+'_cn.txt', 'r')
     test_label_file = open(dataPath + 'test_'+category+'_label.txt', 'r')
     for i in range(0, 4000):
         vec_line1 = test_vec_file1.readline()
@@ -710,10 +710,10 @@ def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serial
 def WordCount(SeriPath, type, category, dimension):
     #######################
     filenames = []
-    filenames.append(SeriPath + type+"_test_"+category+"_en_"+str(dimension)+".txt")
-    filenames.append(SeriPath + type+"_test_"+category+"_cn_"+str(dimension)+".txt")
-    filenames.append(SeriPath + type+"_train_"+category+"_en_"+str(dimension)+".txt")
-    filenames.append(SeriPath + type+"_train_"+category+"_cn_"+str(dimension)+".txt")
+    filenames.append(SeriPath + type+"_test_"+category+"_en.txt")
+    filenames.append(SeriPath + type+"_test_"+category+"_cn.txt")
+    filenames.append(SeriPath + type+"_train_"+category+"_en.txt")
+    filenames.append(SeriPath + type+"_train_"+category+"_cn.txt")
     wordsnumber=0
     maxLen = 0
     for filename in filenames:
@@ -774,8 +774,8 @@ if __name__ == '__main__':
     f.close()
     
     # See function train for all possible parameter and there definition.
-    categories = ['book']#, 'dvd', 'music']
-    dimension = 100 # 100, 150, 
+    categories = ['book', 'dvd', 'music']
+    dimensions = [100, 150] # 100, 150, 
     sentimentDim = 50
     type = 'semantic_sentiment'
     #type = 'semantic'
@@ -784,8 +784,10 @@ if __name__ == '__main__':
     TotalOutputDir = inputInfo["TotalOutputDir"]
     SerializerDir = inputInfo["SerializerDir"]
 
-    for category in categories:
-        argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1)
-        p = Process(target=SingleProcess, args=(type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1))
-        p.start()
-        print(category + " is running. PID: " + str(p.ident))
+    for dimension in dimensions:
+        for category in categories:
+            argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,0)
+            p = Process(target=SingleProcess, args=argsForProcess)
+            p.start()
+            print(category + " is running. PID: " + str(p.ident))
+            p.join()# one by one.

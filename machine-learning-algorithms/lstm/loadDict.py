@@ -74,38 +74,40 @@ if __name__ == "__main__":
     # dictfilename = "G:/liuzhuang/data/music_wordList.txt"
     # wordDicti = loadPriorpolarityPosList(dictfilename)
     # count = 0;
-    #formatDict("/home/laboratory/corpus/CN_Jixing.txt",1, 3, "p")
-    # print(wordDicti[16])
-    standardDict = loadDict("/home/laboratory/corpus/CN_Jixing.txt.newDict")
-    yangDict = loadDictYang("/home/laboratory/corpus/CN_Jixing.txt.newDict", 0)
-    newDict = loadDictYang("/home/laboratory/corpus/cn/CHICNDict.txt", 0)
+    formatDict("/home/laboratory/corpus_musicOnly/en/CHIENDict.txt",0, 2, "p")
+    formatDict("/home/laboratory/corpus_musicOnly/cn/CHICNDict.txt",1, 2, "p")
+   
+   
+    # standardDict = loadDict("/home/laboratory/corpus/CN_Jixing.txt.newDict")
+    # yangDict = loadDictYang("/home/laboratory/corpus/CN_Jixing.txt.newDict", 0)
+    # newDict = loadDictYang("/home/laboratory/corpus/cn/CHICNDict.txt", 0)
     
-    languages = ['cn']#, 'cn']
-    classes = ['book', 'dvd', 'music']
-    useTypes = ['test', 'label']
-    corpusList = []
-    for language in languages:
-        for clas in classes:
-            for useType in useTypes:
-                corpusList.append("/home/laboratory/corpus/" + language + "/"+useType+"_"+clas+"_new.txt")
+    # languages = ['cn']#, 'cn']
+    # classes = ['book', 'dvd', 'music']
+    # useTypes = ['test', 'label']
+    # corpusList = []
+    # for language in languages:
+    #     for clas in classes:
+    #         for useType in useTypes:
+    #             corpusList.append("/home/laboratory/corpus/" + language + "/"+useType+"_"+clas+"_new.txt")
 
-    for path in corpusList:
-        with open(path, "r") as corpus:
-            for line in corpus:
-                words = line.strip().split(" ")
-                for word in words:
-                    if(word in yangDict):
-                        yangDict[word] += 1
+    # for path in corpusList:
+    #     with open(path, "r") as corpus:
+    #         for line in corpus:
+    #             words = line.strip().split(" ")
+    #             for word in words:
+    #                 if(word in yangDict):
+    #                     yangDict[word] += 1
 
-    wordCount = open("/home/laboratory/corpus/newCNWord", "w")
-    for key in yangDict:
-        if(key not in newDict):
-            if yangDict[key] >= 0:
-                if standardDict[key]:
-                    wordCount.write(key + " " + "positive" +" " + str(yangDict[key]) + "\n")
-                else:
-                    wordCount.write(key + " " + "negative" +" " + str(yangDict[key]) + "\n")
-    wordCount.close()
+    # wordCount = open("/home/laboratory/corpus/newCNWord", "w")
+    # for key in yangDict:
+    #     if(key not in newDict):
+    #         if yangDict[key] >= 0:
+    #             if standardDict[key]:
+    #                 wordCount.write(key + " " + "positive" +" " + str(yangDict[key]) + "\n")
+    #             else:
+    #                 wordCount.write(key + " " + "negative" +" " + str(yangDict[key]) + "\n")
+    # wordCount.close()
     
     # startoccur = 100
     # occur = 300
