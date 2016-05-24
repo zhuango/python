@@ -445,6 +445,9 @@ def train_lstm(
     use_dropout=False,  # if False slightly faster, but worst test error
     test_size=-1,  # If >0, we keep only this number of test example.
 ):
+    errorThreshold = 0.0009
+    countLessThanThreshold = 0
+    exitThresholdHitCount = 5
     # reload_model='lstm_model_'+category+'.npz',  # Path to a saved model we want to start from.
     reload_model = None  # Path to a saved model we want to start from.
     saveto=dataSetPath + 'lstm_model_'+category+'.npz'
@@ -617,6 +620,10 @@ def train_lstm(
                         # numpy.savetxt(embedName+'/embeddings_best.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
                     print ('Train ', train_err, 'Test ', test_err)
+                    if(train_err < errorThreshold):
+                        countLessThanThreshold += 1
+                        if(countLessThanThreshold > exitThresholdHitCount):
+                            estop = True
 
             # numpy.savetxt(embedName+'/embeddings_'+str(eidx)+'.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
@@ -786,6 +793,9 @@ if __name__ == '__main__':
 
     for dimension in dimensions:
         for category in categories:
+            if(dimension == 100):
+                if(category == "book" or category == "dvd"):
+                    continue;
             argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,0)
             p = Process(target=SingleProcess, args=argsForProcess)
             p.start()

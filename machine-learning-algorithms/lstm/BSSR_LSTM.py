@@ -18,6 +18,8 @@ datasets = {'imdb': (imdb_no_valid.load_data, imdb_no_valid.prepare_data)}
 from wc import wc
 from writeNonsenceLabel import writeNonsenceLabel
 from writeNonsenceVector import writeNonsenceVector
+from genSentenceVector import genSentenceVector
+from AddZerosVectorToSent import AddZerosVectorToSent
 
 # Set the random number generators' seeds for consistency
 SEED = 123
@@ -404,6 +406,9 @@ def train_lstm(
     test_size=-1,  # If >0, we keep only this number of test example.
     #embedName='dev_seq_relation_new_200',
 ):
+    errorThreshold = 0.0009
+    countLessThanThreshold = 0
+    exitThresholdHitCount = 7
     # Model options
     model_options = locals().copy()
     model_options['dictPath'] = dictPath
@@ -559,6 +564,10 @@ def train_lstm(
                         #numpy.savetxt('paper experiment/'+embedName+'/embeddings_best.txt', params["Wemb"], fmt='%.4f', delimiter=' ')
 
                     print ('Train ', train_err, 'Test ', test_err)
+                    if(train_err < errorThreshold):
+                        countLessThanThreshold += 1
+                        if(countLessThanThreshold > exitThresholdHitCount):
+                            estop = True
 
                     if (len(history_errs) > patience and
                         test_err >= numpy.array(history_errs)[:].min()):
@@ -682,6 +691,7 @@ def preprocess(seriFilePath, labelFilePath, dataSetPath, wordDimension, batch_si
 
 def SingleProcess(corpusRootPath, lstmOutputRootPath, clas, language, wordDimension, corpusType):
     
+    representationDim = 50
     corpusPath = corpusRootPath
     lstmOutputPath = lstmOutputRootPath + corpusType+ "/"
     
@@ -695,15 +705,16 @@ def SingleProcess(corpusRootPath, lstmOutputRootPath, clas, language, wordDimens
                 
     if(not os.path.exists(datasetPath)):
         preprocess(seriFilePath, labelFilePath,datasetPath, wordDimension, batch_size = 10, dictCount = wc(dictPath))
-    train_lstm(
-        lstmOutPutRootPath = lstmOutputPath + branchPath,
-        dictPath = dictPath,
-        dataSetPath = datasetPath,
-        dim_proj = wordDimension,
-        n_words = wc(dictPath),
-        max_epochs=30,
-        test_size=wc(seriFilePath)
-        )
+    if(not os.path.exists(lstmOutputPath + branchPath+'/test_proj_best.txt')):
+        train_lstm(
+            lstmOutPutRootPath = lstmOutputPath + branchPath,
+            dictPath = dictPath,
+            dataSetPath = datasetPath,
+            dim_proj = wordDimension,
+            n_words = wc(dictPath),
+            max_epochs=30,
+            test_size=wc(seriFilePath)
+            )
     numberFile = corpusPath+language+"/"+corpusType+"_"+clas+"_new.txt.number"
     fragmentVectorFile = lstmOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/test_proj_best.txt"
     indexFile = lstmOutputPath+str(wordDimension)+"d/"+language+"/"+clas+"/" + ""+corpusType+"_"+clas+"_new.txt.index"
@@ -737,9 +748,9 @@ if __name__ == '__main__':
     # type = 'semantic_sentiment'
     type = 'semantic'
     
-    classes = ["book", "music", "dvd"]
+    classes = ["music"]#, "book", "dvd"
     languages = ["en", "cn"]
-    wordDimensions = [50, 100]
+    wordDimensions = [50]#, 100
     corpusTypes = ["label", "test"]
     processCount = 0
     for corpusType in corpusTypes:
@@ -751,4 +762,5 @@ if __name__ == '__main__':
                     p = Process(target=SingleProcess, args=(corpusRootPath, lstmOutputRootPath, clas, language, wordDimension,corpusType))
                     p.start()
                     print(str(wordDimension) + " " + language + " " + clas + " is running. PID: " + str(p.ident))
-                    if(processCount % 3 == 0):  p.join()
+                    #if(processCount % 3 == 0):  p.join()
+                    p.join() # one by one.
