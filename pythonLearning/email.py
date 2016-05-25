@@ -11,7 +11,7 @@ def send_mail(to_list,sub,content):
     #设置服务器，用户名、口令以及邮箱的后缀
     mail_host="smtp.qq.com"
     mail_user="1013395315"
-    mail_pass="123456"
+    mail_pass="aixiteluli16,,."
     mail_postfix="qq.com"
     me=mail_user+"<"+mail_user+"@"+mail_postfix+">"
     msg = MIMEText(content)
@@ -24,14 +24,14 @@ def send_mail(to_list,sub,content):
         s.login(mail_user,mail_pass)
         s.sendmail(me, to_list, msg.as_string())
         s.close()
-        print '1'
+        print('1')
         return True
     except Exception, e:
-        print '2'
+        print('2')
         print str(e)
         return False
 if __name__ == '__main__':
     if send_mail(mail_to,"hello","this is python sent"):
-        print "发送成功"
+        print ("发送成功")
     else:
-        print "发送失败"
+            print ("发送失败")
