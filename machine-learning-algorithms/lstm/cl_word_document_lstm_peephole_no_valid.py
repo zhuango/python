@@ -448,6 +448,7 @@ def train_lstm(
     errorThreshold = 0.009
     countLessThanThreshold = 0
     exitThresholdHitCount = 5
+    diffStr = " (" + category + " " +str(dim_proj) + "d)"
     # reload_model='lstm_model_'+category+'.npz',  # Path to a saved model we want to start from.
     reload_model = None  # Path to a saved model we want to start from.
     saveto=dataSetPath + 'lstm_model_'+category+'.npz'
@@ -576,7 +577,7 @@ def train_lstm(
                     return 1., 1., 1.
 
                 if numpy.mod(uidx, dispFreq) == 0:
-                    print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'Cost1', cost1, 'Cost2', cost2
+                    print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'Cost1', cost1, 'Cost2', cost2, diffStr
 
                 if saveto and numpy.mod(uidx, saveFreq) == 0:
                     print 'Saving...',
@@ -592,18 +593,18 @@ def train_lstm(
 
                 if numpy.mod(uidx, validFreq) == 0:
                     use_noise.set_value(0.)
-                    print('11111111111')
+                    print('11111111111' + diffStr)
                     train_err = pred_error(f_pred, prepare_data, train, kf)
-                    print('22222222222')
+                    print('22222222222'+diffStr)
                     test_err = pred_error(f_pred, prepare_data, test, kf_test)
-                    print('33333333333')
+                    print('33333333333' +diffStr)
                     # test_proj = get_proj(f_proj, prepare_data, test, kf_test, dim_proj)
                     # print('44444444444')
                     # train_proj = get_proj(f_proj, prepare_data, train, kf, dim_proj)
                     # print('55555555555')
                     history_errs.append([test_err])
-                    print('4444444444')
-                    print('Accuracy:' + str(1-float(test_err)))
+                    print('4444444444' + diffStr)
+                    print('Accuracy:' + str(1-float(test_err)) + diffStr)
                     f.write('Accuracy:' + str(1-float(test_err)))
                     f.write('\n')
 
@@ -619,7 +620,7 @@ def train_lstm(
                         numpy.savetxt(dataSetPath+'/test_best.txt', test_prob_best, fmt='%.4f', delimiter=' ')
                         # numpy.savetxt(embedName+'/embeddings_best.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
-                    print ('Train ', train_err, 'Test ', test_err)
+                    print ('Train ', train_err, 'Test ', test_err, diffStr)
                     if(train_err < errorThreshold):
                         countLessThanThreshold += 1
                         if(countLessThanThreshold > exitThresholdHitCount):
@@ -656,13 +657,13 @@ def train_lstm(
     train_err = pred_error(f_pred, prepare_data, train, kf_train_sorted)
     test_err = pred_error(f_pred, prepare_data, test, kf_test)
 
-    print 'Train ', train_err, 'Test ', test_err
+    print 'Train ', train_err, 'Test ', test_err, diffStr
     if saveto:
         numpy.savez(saveto, train_err=train_err, test_err=test_err,
                     history_errs=history_errs, **best_p)
 
     print 'The code run for %d epochs, with %f sec/epochs' % (
-        (eidx + 1), (end_time - start_time) / (1. * (eidx + 1)))
+        (eidx + 1), (end_time - start_time) / (1. * (eidx + 1))), diffStr
     print >> sys.stderr, ('Training took %.1fs' %
                           (end_time - start_time))
     return train_err, test_err
