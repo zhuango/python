@@ -445,7 +445,7 @@ def train_lstm(
     use_dropout=False,  # if False slightly faster, but worst test error
     test_size=-1,  # If >0, we keep only this number of test example.
 ):
-    errorThreshold = 0.0009
+    errorThreshold = 0.009
     countLessThanThreshold = 0
     exitThresholdHitCount = 5
     # reload_model='lstm_model_'+category+'.npz',  # Path to a saved model we want to start from.
@@ -616,7 +616,7 @@ def train_lstm(
 
                         # numpy.savetxt('results/'+embedName+'_embedding'+str(dim_proj)+'/train_proj_best.txt', train_proj, fmt='%.4f', delimiter=' ')
                         # numpy.savetxt('paper experiment/'+embedName+'/test_proj_best.txt', test_proj, fmt='%.4f', delimiter=' ')
-                        numpy.savetxt(dataSetPath+'/test_best.txt', test_prob_best, fmt='%.2f', delimiter=' ')
+                        numpy.savetxt(dataSetPath+'/test_best.txt', test_prob_best, fmt='%.4f', delimiter=' ')
                         # numpy.savetxt(embedName+'/embeddings_best.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
                     print ('Train ', train_err, 'Test ', test_err)
@@ -634,7 +634,7 @@ def train_lstm(
             # numpy.savetxt(embedName+'/train_proj_'+str(eidx)+'.txt', train_proj, fmt='%.4f', delimiter=' ')
 
             # numpy.savetxt('paper experiment/'+embedName+'/train_prob_'+str(eidx)+'.txt', train_prob, fmt='%.2f', delimiter=' ')
-            numpy.savetxt(dataSetPath+'/test_prob_'+str(eidx)+'.txt', test_prob, fmt='%.2f', delimiter=' ')
+            numpy.savetxt(dataSetPath+'/test_prob_'+str(eidx)+'.txt', test_prob, fmt='%.4f', delimiter=' ')
 
             print 'Seen %d samples' % n_samples
 
@@ -782,7 +782,7 @@ if __name__ == '__main__':
     
     # See function train for all possible parameter and there definition.
     categories = ['book', 'dvd', 'music']
-    dimensions = [100, 150] # 100, 150, 
+    dimensions = [150, 250] # 100, 150, 250
     sentimentDim = 50
     type = 'semantic_sentiment'
     #type = 'semantic'
@@ -793,7 +793,7 @@ if __name__ == '__main__':
 
     for dimension in dimensions:
         for category in categories:
-            if(dimension == 100):
+            if(dimension == 150):
                 if(category == "book" or category == "dvd"):
                     continue;
             argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,0)

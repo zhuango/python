@@ -15,7 +15,7 @@ if __name__ == '__main__':
    print "in parent process (id %s)" % os.getpid()
    for i in range(3):
         print "in parent process (id %s)" % os.getpid()
-        p = Process(target=sleeper, args=('bob', 1 ,"SDF"))
+        p = Process(target=sleeper, args=('bob', 10 ,"SDF"))
         
         p.start()
         print(p.ident)
