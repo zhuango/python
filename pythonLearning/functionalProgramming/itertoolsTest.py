@@ -57,3 +57,27 @@ print()
 for res in itertools.chain.from_iterable(["dssf", "sfs"]):
     sys.stdout.write(str(res) + " ")
 print()
+
+for res in itertools.compress("ABCDEFGHIJKLMNOPQRST", [1,0,1,0,1,1]):
+    sys.stdout.write(str(res) + " ")
+print()
+
+for number in itertools.count(0, 0.5):
+    if(number > 100): break
+    sys.stdout.write(str(number) + " ")
+print()
+
+cycle=0
+for elem in itertools.cycle("liu"):
+    sys.stdout.write(str(elem) + " ")
+    cycle += 1
+    if(cycle > 3 * 10): break
+print()
+
+testData = [1, -2, 321, -2, -213, 2, 123]
+# drop element from start to the index which first makes predicate function flase.
+for elem in itertools.dropwhile(lambda x : x > 0, testData):
+    sys.stdout.write(str(elem) + " ")
+print()
+
+print(list(itertools.dropwhile(lambda x : x == ' ', "     liuzhuang  $")))
