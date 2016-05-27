@@ -61,3 +61,9 @@ import collections
 
 model = collections.defaultdict(lambda: 1)
 print(model["erw"])
+
+import sys
+from collections import OrderedDict
+newDict = OrderedDict((x, y) for x, y in zip([1, 2,3, 4], [5, 6, 7,8]))
+for key in newDict:
+    sys.stdout.write(str(key) + " " + str(newDict[key]) + "\n")
