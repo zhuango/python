@@ -24,20 +24,21 @@ def accuracy(probPath, labelPath):
 
 if __name__ == "__main__":
 
-    clas = "book" # book dvd music
+    clas = "dvd" # book dvd music
     prodCount = 0
     
-    outputPath = "G:/liuzhuang/corpus_WSR/TotalOutput/200d/book/";
+    outputPath = "G:/liuzhuang/corpus_WSR/TotalOutput/200d/dvd/";
     labelPath = "G:/liuzhuang/corpus_chenbro/Serializer/test_"+clas+"_label.txt"
     bestPath = outputPath+"/test_best.txt"
     if(not os.path.exists(bestPath)):
         print(clas + " test best has not been generated.")
-    print(clas)
-    max = 0;
-    for i in range(0, prodCount):
-        acc = accuracy(outputPath + "test_prob_"+str(i)+".txt", labelPath)
-        if(acc > max): max = acc
-        print("iter "+ str(i) +" Accuracy: " + str(acc))
-    
-    acc = accuracy(bestPath, labelPath)
-    print("best : " + str(acc))
+    else:
+        print(clas)
+        max = 0;
+        for i in range(0, prodCount):
+            acc = accuracy(outputPath + "test_prob_"+str(i)+".txt", labelPath)
+            if(acc > max): max = acc
+            print("iter "+ str(i) +" Accuracy: " + str(acc))
+        
+        acc = accuracy(bestPath, labelPath)
+        print("best : " + str(acc))
