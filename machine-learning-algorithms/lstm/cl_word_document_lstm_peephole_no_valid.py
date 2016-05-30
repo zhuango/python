@@ -448,7 +448,7 @@ def train_lstm(
     errorThreshold = 0.009
     countLessThanThreshold = 0
     exitThresholdHitCount = 5
-    diffStr = " (" + category + " " +str(dim_proj) + "d)"
+    diffStr = " (" + category + " " +str(dim_proj) + "d " + str(os.getpid()) +")"
     # reload_model='lstm_model_'+category+'.npz',  # Path to a saved model we want to start from.
     reload_model = None  # Path to a saved model we want to start from.
     saveto=dataSetPath + 'lstm_model_'+category+'.npz'
@@ -621,10 +621,10 @@ def train_lstm(
                         # numpy.savetxt(embedName+'/embeddings_best.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
                     print ('Train ', train_err, 'Test ', test_err, diffStr)
-                    if(train_err < errorThreshold):
-                        countLessThanThreshold += 1
-                        if(countLessThanThreshold > exitThresholdHitCount):
-                            estop = True
+                    # if(train_err < errorThreshold):
+                    #     countLessThanThreshold += 1
+                    #     if(countLessThanThreshold > exitThresholdHitCount):
+                    #         estop = True
 
             # numpy.savetxt(embedName+'/embeddings_'+str(eidx)+'.txt', params['Wemb'], fmt='%.4f', delimiter=' ')
 
@@ -724,10 +724,10 @@ def WordCount(SeriPath, type, category, dimension):
     filenames.append(SeriPath + type+"_train_"+category+"_cn.txt")
     wordsnumber=0
     maxLen = 0
+    wordsnumber = wc(SeriPath +type + "_"+category+"_dict_" +str(dimension) + ".txt")
     for filename in filenames:
-        wordsnumber += wcWord(filename)
         tmpLen = maxWordLen(filename)
-        if(maxLen < maxWordLen(filename)):
+        if(maxLen < tmpLen):
             maxLen = tmpLen
     print(wordsnumber)
     return wordsnumber, maxLen
@@ -761,7 +761,7 @@ def SingleProcess(
         category=category,
         dataSetPath=outputDir,
         dictPath = dictPath,
-        max_epochs=25,
+        max_epochs=15,
         n_words=n_words,
         maxlen=maxlen + 1,
         decay_c=0.001,
@@ -771,7 +771,7 @@ def SingleProcess(
     )
 
 import os
-from wc import wcWord, maxWordLen
+from wc import wcWord, maxWordLen, wc
 import json
 from multiprocessing import Process
 
@@ -782,8 +782,8 @@ if __name__ == '__main__':
     f.close()
     
     # See function train for all possible parameter and there definition.
-    categories = ['book', 'dvd', 'music']
-    dimensions = [150, 250] # 100, 150, 250
+    categories = ['book']#, 'dvd', 'music'
+    dimensions = [150] # 100, 150, 250
     sentimentDim = 50
     type = 'semantic_sentiment'
     #type = 'semantic'
@@ -792,13 +792,20 @@ if __name__ == '__main__':
     TotalOutputDir = inputInfo["TotalOutputDir"]
     SerializerDir = inputInfo["SerializerDir"]
 
-    for dimension in dimensions:
-        for category in categories:
-            if(dimension == 150):
-                if(category == "book" or category == "dvd"):
-                    continue;
-            argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,0)
-            p = Process(target=SingleProcess, args=argsForProcess)
-            p.start()
-            print(category + " is running. PID: " + str(p.ident))
-            p.join()# one by one.
+    # for dimension in dimensions:
+    #     for category in categories:
+    #         argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,9,1)
+    #         p = Process(target=SingleProcess, args=argsForProcess)
+    #         p.start()
+    #         print(category + " is running. PID: " + str(p.ident))
+    #         p.join()# one by one.
+
+    #SingleProcess(type,"book",100,sentimentDim,SerializerDir,TotalOutputDir+"book9_1/",9,1)
+    
+    #SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir+"book9_1/",9,1)
+    
+    SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir+"dvd4_6/",4,6)
+    
+    SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir+"music6_4/",6,4)
+
+    SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir+"book4_6/",4,6)
