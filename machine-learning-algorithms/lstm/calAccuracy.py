@@ -1,3 +1,4 @@
+import os
 # prob format: "0.00 1.11"
 # label format: "1"
 def accuracy(probPath, labelPath):
@@ -22,12 +23,15 @@ def accuracy(probPath, labelPath):
     return (1.0 - errorCount / testCount)
 
 if __name__ == "__main__":
-    clas = "dvd" # book dvd music
-    prodCount = 3
+
+    clas = "book" # book dvd music
+    prodCount = 0
     
-    outputPath = "/home/laboratory/corpus/TotalOutput/100d/"+clas+"/";
-    labelPath = "/home/laboratory/corpus/Serializer/test_"+clas+"_label.txt"
-    bestPath = "/home/laboratory/corpus/TotalOutput/100d/"+clas+"/test_best.txt"
+    outputPath = "G:/liuzhuang/corpus_WSR/TotalOutput/200d/book/";
+    labelPath = "G:/liuzhuang/corpus_chenbro/Serializer/test_"+clas+"_label.txt"
+    bestPath = outputPath+"/test_best.txt"
+    if(not os.path.exists(bestPath)):
+        print(clas + " test best has not been generated.")
     print(clas)
     max = 0;
     for i in range(0, prodCount):
@@ -36,5 +40,4 @@ if __name__ == "__main__":
         print("iter "+ str(i) +" Accuracy: " + str(acc))
     
     acc = accuracy(bestPath, labelPath)
-    print("best : " + str(acc))     
-    print("Max: " + str(max))
+    print("best : " + str(acc))
