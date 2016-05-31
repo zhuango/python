@@ -1,6 +1,7 @@
 
 from collections import OrderedDict
-import cPickle as pkl
+import _pickle as pkl
+#import cPickle as pkl
 import sys
 import time
 
@@ -10,8 +11,8 @@ from theano import config
 import theano.tensor as tensor
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
-import sentence_document_imdb_no_valid
-datasets = {'imdb': (sentence_document_imdb_no_valid.load_data, sentence_document_imdb_no_valid.prepare_data)}
+import sentence_document_imdb_no_valid_WSR
+datasets = {'imdb': (sentence_document_imdb_no_valid_WSR.load_data, sentence_document_imdb_no_valid_WSR.prepare_data)}
 
 # Set the random number generators' seeds for consistency
 SEED = 123
@@ -52,7 +53,7 @@ def zipp(params, tparams):
     """
     When we reload the model. Needed for the GPU stuff.
     """
-    for kk, vv in params.iteritems():
+    for kk, vv in params.items():
         tparams[kk].set_value(vv)
 
 
@@ -61,7 +62,7 @@ def unzip(zipped):
     When we pickle the model. Needed for the GPU stuff.
     """
     new_params = OrderedDict()
-    for kk, vv in zipped.iteritems():
+    for kk, vv in zipped.items():
         new_params[kk] = vv.get_value()
     return new_params
 
@@ -120,7 +121,7 @@ def init_params(options, dim, sentimentDim):
 
 def load_params(path, params):
     pp = numpy.load(path)
-    for kk, vv in params.iteritems():
+    for kk, vv in params.items():
         if kk not in pp:
             raise Warning('%s is not in the archive' % kk)
         params[kk] = pp[kk]
@@ -130,7 +131,7 @@ def load_params(path, params):
 
 def init_tparams(params):
     tparams = OrderedDict()
-    for kk, pp in params.iteritems():
+    for kk, pp in params.items():
         tparams[kk] = theano.shared(params[kk], name=kk)
         print(kk)
     return tparams
@@ -251,13 +252,13 @@ def adadelta(lr, tparams, grads, x_zheng, x_zheng_mask, x_ni, x_ni_mask, y, cost
 
     zipped_grads = [theano.shared(p.get_value() * numpy_floatX(0.),
                                   name='%s_grad' % k)
-                    for k, p in tparams.iteritems()]
+                    for k, p in tparams.items()]
     running_up2 = [theano.shared(p.get_value() * numpy_floatX(0.),
                                  name='%s_rup2' % k)
-                   for k, p in tparams.iteritems()]
+                   for k, p in tparams.items()]
     running_grads2 = [theano.shared(p.get_value() * numpy_floatX(0.),
                                     name='%s_rgrad2' % k)
-                      for k, p in tparams.iteritems()]
+                      for k, p in tparams.items()]
 
     zgup = [(zg, g) for zg, g in zip(zipped_grads, grads)]
     rg2up = [(rg2, 0.95 * rg2 + 0.05 * (g ** 2))
@@ -373,7 +374,7 @@ def pred_probs(f_pred_prob, prepare_data, data, iterator, verbose=False):
 
         n_done += len(test_index)
         if verbose:
-            print '%d/%d samples classified' % (n_done, n_samples)
+            print ('%d/%d samples classified' % (n_done, n_samples))
 
     return probs
 
@@ -458,11 +459,11 @@ def train_lstm(
 
     model_options['dictPath'] = dictPath
 
-    print "model options", model_options
+    print ("model options", model_options)
 
     load_data, prepare_data = get_dataset(dataset)
 
-    print 'Loading data'
+    print ('Loading data')
     train, test = load_data(path=dataSetPath + category+'.pkl', n_words=n_words, maxlen=maxlen)
     if test_size > 0:
         # The test set is sorted by size, but we want to keep random
@@ -477,7 +478,7 @@ def train_lstm(
 
     model_options['ydim'] = ydim
 
-    print 'Building model'
+    print ('Building model')
     # This create the initial parameters as numpy ndarrays.
     # Dict name (string) -> numpy ndarray
     params = init_params(model_options, dim_proj, sentimentDim)
@@ -516,12 +517,12 @@ def train_lstm(
     f_grad_shared, f_grad_shared_zheng, f_grad_shared_ni, f_update \
         = optimizer(lr, tparams, grads, x_zheng, x_zheng_mask, x_ni, x_ni_mask, y, cost, cost1, cost2)
 
-    print 'Optimization'
+    print ('Optimization')
 
     kf_test = get_minibatches_idx(len(test[0]), test_batch_size)
     
-    print "%d train examples" % len(train[0])
-    print "%d test examples" % len(test[0])
+    print ("%d train examples" % len(train[0]))
+    print ("%d test examples" % len(test[0]))
 
     history_errs = []
     best_p = None
@@ -573,14 +574,14 @@ def train_lstm(
                 f_update(lrate)
 
                 if numpy.isnan(cost) or numpy.isinf(cost):
-                    print 'NaN detected'
+                    print ('NaN detected')
                     return 1., 1., 1.
 
                 if numpy.mod(uidx, dispFreq) == 0:
-                    print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'Cost1', cost1, 'Cost2', cost2, diffStr
+                    print ('Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'Cost1', cost1, 'Cost2', cost2, diffStr)
 
                 if saveto and numpy.mod(uidx, saveFreq) == 0:
-                    print 'Saving...',
+                    print ('Saving...',)
 
                     if best_p is not None:
                         params = best_p
@@ -589,7 +590,7 @@ def train_lstm(
                         params = unzip(tparams)
                     numpy.savez(saveto, history_errs=history_errs, **params)
                     pkl.dump(model_options, open('%s.pkl' % saveto, 'wb'), -1)
-                    print 'Done'
+                    print ('Done')
 
                 if numpy.mod(uidx, validFreq) == 0:
                     use_noise.set_value(0.)
@@ -637,14 +638,14 @@ def train_lstm(
             # numpy.savetxt('paper experiment/'+embedName+'/train_prob_'+str(eidx)+'.txt', train_prob, fmt='%.2f', delimiter=' ')
             numpy.savetxt(dataSetPath+'/test_prob_'+str(eidx)+'.txt', test_prob, fmt='%.4f', delimiter=' ')
 
-            print 'Seen %d samples' % n_samples
+            print ('Seen %d samples' % n_samples)
 
             if estop:
                 break
 
         f.close()
     except KeyboardInterrupt:
-        print "Training interupted"
+        print ("Training interupted")
 
     end_time = time.time()
     if best_p is not None:
@@ -657,19 +658,18 @@ def train_lstm(
     train_err = pred_error(f_pred, prepare_data, train, kf_train_sorted)
     test_err = pred_error(f_pred, prepare_data, test, kf_test)
 
-    print 'Train ', train_err, 'Test ', test_err, diffStr
+    print ('Train ', train_err, 'Test ', test_err, diffStr)
     if saveto:
         numpy.savez(saveto, train_err=train_err, test_err=test_err,
                     history_errs=history_errs, **best_p)
 
-    print 'The code run for %d epochs, with %f sec/epochs' % (
-        (eidx + 1), (end_time - start_time) / (1. * (eidx + 1))), diffStr
+    print ('The code run for %d epochs, with %f sec/epochs' % (
+        (eidx + 1), (end_time - start_time) / (1. * (eidx + 1))), diffStr)
     print >> sys.stderr, ('Training took %.1fs' %
                           (end_time - start_time))
     return train_err, test_err
 
 def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serializer/", dataSetPath = ""):
-    import cPickle
     print("preprocessing...")
     train_data_x_zheng = []
     train_data_x_ni = []
@@ -706,12 +706,12 @@ def preprocess(type, category, dimension, dataPath = "G:/liuzhuang/corpus/Serial
         else:
             test_data_y.extend([0])
 
-    output_file = open(dataSetPath + category+'.pkl', 'w')
+    output_file = open(dataSetPath + category+'.pkl', 'wb')
 
     train_data = [train_data_x_zheng, train_data_x_ni, train_data_y]
     test_data = [test_data_x_zheng, test_data_x_ni, test_data_y]
-    cPickle.dump(train_data, output_file)
-    cPickle.dump(test_data, output_file)
+    pkl.dump(train_data, output_file)
+    pkl.dump(test_data, output_file)
 
     output_file.close()
 
@@ -780,12 +780,12 @@ from multiprocessing import Process
 import subprocess
 import re
 def findProcess( processId ):
-    #ps= subprocess.Popen("ps -ef | grep "+processId, shell=True, stdout=subprocess.PIPE)
-    ps= subprocess.Popen(r'tasklist.exe /NH /FI "PID eq %d"' % processId, shell=True, stdout=subprocess.PIPE)
+    ps= subprocess.Popen("ps -ef | grep "+str(processId), shell=True, stdout=subprocess.PIPE)
+    #ps= subprocess.Popen(r'tasklist.exe /NH /FI "PID eq %s"' % str(processId), shell=True, stdout=subprocess.PIPE)
     output = ps.stdout.read()
     ps.stdout.close()
     ps.wait()
-    return output
+    return str(output)
 def isProcessRunning( processId):
     output = findProcess( processId )
     if re.search(str(processId), output) is None:
@@ -800,8 +800,8 @@ if __name__ == '__main__':
     f.close()
     
     # See function train for all possible parameter and there definition.
-    categories = ['book', 'dvd', 'music']#'dvd', book
-    dimensions = [200] # 100, 150, 250
+    categories = ['music']#'dvd', book, 'music'
+    dimensions = [50] # 100, 150, 250
     sentimentDim = 0
     #type = 'semantic_sentiment'
     type = 'semantic'
@@ -810,10 +810,10 @@ if __name__ == '__main__':
     TotalOutputDir = inputInfo["TotalOutputDir"]
     SerializerDir = inputInfo["SerializerDir"]
     print(os.getpid())
-    pid =95243
-    while(isProcessRunning(pid)):
-        print(str(pid) + " is running.\n")
-        time.sleep(5 * 60)
+    # pid =95243
+    # while(isProcessRunning(pid)):
+    #     print(str(pid) + " is running.\n")
+    #     time.sleep(5 * 60)
     for dimension in dimensions:
         for category in categories:
             SingleProcess(type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,1,1)
