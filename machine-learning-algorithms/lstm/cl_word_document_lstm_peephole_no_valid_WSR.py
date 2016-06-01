@@ -781,7 +781,7 @@ import subprocess
 import re
 def findProcess( processId ):
     ps= subprocess.Popen("ps -ef | grep "+str(processId), shell=True, stdout=subprocess.PIPE)
-    #ps= subprocess.Popen(r'tasklist.exe /NH /FI "PID eq %s"' % str(processId), shell=True, stdout=subprocess.PIPE)
+    #ps= subprocess.Popen(r'tasklist.exe /NH /FI "PID eq %d"' % processId, shell=True, stdout=subprocess.PIPE)
     output = ps.stdout.read()
     ps.stdout.close()
     ps.wait()

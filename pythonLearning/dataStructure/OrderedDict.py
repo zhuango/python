@@ -21,3 +21,5 @@ od['qwer'] = 12
 
 for kry in od.keys():
     print(kry)
+for kk, vv in od.items():
+    print(str(kk) + " " + str(vv))

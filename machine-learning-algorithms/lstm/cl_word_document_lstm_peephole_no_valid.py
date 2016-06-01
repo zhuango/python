@@ -448,7 +448,7 @@ def train_lstm(
     errorThreshold = 0.009
     countLessThanThreshold = 0
     exitThresholdHitCount = 5
-    diffStr = " (" + category + " " +str(dim_proj) + "d " + str(os.getpid()) +")"
+    diffStr = " (" + category + " " +str(dim_proj) + "d " + str(os.getpid()) +" " + str(alpha) +"_"+str(beta) +")"
     # reload_model='lstm_model_'+category+'.npz',  # Path to a saved model we want to start from.
     reload_model = None  # Path to a saved model we want to start from.
     saveto=dataSetPath + 'lstm_model_'+category+'.npz'
@@ -746,7 +746,7 @@ def SingleProcess(
     
     wordDimension = dimension - sentimentDim
     
-    outputDir = TotalOutputDir + str(wordDimension) + "d/" + category + "/"
+    outputDir = TotalOutputDir + str(wordDimension) + "d/" + category +"_"+str(Alpha)+"_"+str(Beta)+"/"
     SeriPath = SerializerDir
     dictPath = SeriPath + type + "_" + category +"_dict_"+ str(wordDimension)+".txt"
     if(not os.path.exists(outputDir)):
@@ -774,7 +774,22 @@ import os
 from wc import wcWord, maxWordLen, wc
 import json
 from multiprocessing import Process
-
+import subprocess
+import re
+def findProcess( processId ):
+    ps= subprocess.Popen("ps -ef | grep "+str(processId), shell=True, stdout=subprocess.PIPE)
+    #ps= subprocess.Popen(r'tasklist.exe /NH /FI "PID eq %s"' % str(processId), shell=True, stdout=subprocess.PIPE)
+    output = ps.stdout.read()
+    ps.stdout.close()
+    ps.wait()
+    return str(output)
+def isProcessRunning( processId):
+    output = findProcess( processId )
+    if re.search(" "+str(processId) +" ", output) is None:
+        return False
+    else:
+        return True
+        
 if __name__ == '__main__':
 
     f = open('clLSTM.json', 'r')
@@ -792,6 +807,11 @@ if __name__ == '__main__':
     TotalOutputDir = inputInfo["TotalOutputDir"]
     SerializerDir = inputInfo["SerializerDir"]
 
+    pid =22159
+    while(isProcessRunning(pid)):
+        print(str(pid) + " is running.\n")
+        time.sleep(5 * 60)
+
     # for dimension in dimensions:
     #     for category in categories:
     #         argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,9,1)
@@ -804,8 +824,14 @@ if __name__ == '__main__':
     
     #SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir+"book9_1/",9,1)
     
-    SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir+"dvd4_6/",4,6)
+    # SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,2,8)
     
-    SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir+"music6_4/",6,4)
-
-    SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir+"book4_6/",4,6)
+    # SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,2,8)
+    # SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir,2,8)
+    # SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir,8,2)
+    
+    SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,6,4)
+    SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,9,1)
+    SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,9,1)
+    
+    SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,8,2)

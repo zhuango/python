@@ -15,8 +15,8 @@ def accuracy(probPath, labelPath):
             testCount += 1
             label = float(labelFile.readline().strip())
             p = [float(elem) for elem in line.strip().split(" ")]
-            if((p[posiIndex] > p[negaIndex] and label == 0) or
-               (p[posiIndex] <= p[negaIndex] and label == 1)):
+            if((p[posiIndex] >= p[negaIndex] and label == 0) or
+               (p[posiIndex] < p[negaIndex] and label == 1)):
                 errorCount += 1
     labelFile.close()
     
@@ -24,11 +24,11 @@ def accuracy(probPath, labelPath):
 
 if __name__ == "__main__":
 
-    clas = "dvd" # book dvd music
+    clas = "book" # book dvd music
     prodCount = 0
     
-    outputPath = "G:/liuzhuang/corpus_WSR/TotalOutput/200d/dvd/";
-    labelPath = "G:/liuzhuang/corpus_chenbro/Serializer/test_"+clas+"_label.txt"
+    outputPath = "/home/laboratory/corpus/TotalOutput/100d/book_8_2/";
+    labelPath = "/home/laboratory/corpus/Serializer/test_"+clas+"_label.txt"
     bestPath = outputPath+"/test_best.txt"
     if(not os.path.exists(bestPath)):
         print(clas + " test best has not been generated.")
