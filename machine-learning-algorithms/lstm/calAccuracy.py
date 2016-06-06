@@ -24,10 +24,10 @@ def accuracy(probPath, labelPath):
 
 if __name__ == "__main__":
 
-    clas = "book" # book dvd music
+    clas = "music" # book dvd music
     prodCount = 0
     
-    outputPath = "/home/laboratory/corpus/TotalOutput/100d/book_8_2/";
+    outputPath = "/home/laboratory/corpus/TotalOutput/100d/music_4_6/";
     labelPath = "/home/laboratory/corpus/Serializer/test_"+clas+"_label.txt"
     bestPath = outputPath+"/test_best.txt"
     if(not os.path.exists(bestPath)):
