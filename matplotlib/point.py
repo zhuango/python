@@ -15,7 +15,17 @@ prices_Y = sorted(prices_Y)
 print(prices_Y[0])
 
 x = [1, 2, 3, 4, 5]# Make an array of x values
-y = [1, 4, 9, 16, 25]# Make an array of y values for each x value
- 
-pl.plot(ares_X, prices_Y, '.k')# use pylab to plot x and y
+y = [1, 2, 3, 4, 5]
+Y = [1, 0, 1, 0, 1]# Make an array of y values for each x value
+
+
+for i in range(0, len(y)):
+    if Y[i] == 0:
+        pl.plot(x[i], y[i], 'ok')# use pylab to plot x and yield
+    else:
+        pl.plot(x[i], y[i], 'xk') 
 pl.show()# show the plot on the screen
+
+plotData(x, y);
+# pl.plot(ares_X, prices_Y, 'ok')# use pylab to plot x and y
+# pl.show()# show the plot on the screen
