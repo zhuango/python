@@ -1,4 +1,5 @@
 import os
+import sys
 # prob format: "0.00 1.11"
 # label format: "1"
 def accuracy(probPath, labelPath):
@@ -24,10 +25,10 @@ def accuracy(probPath, labelPath):
 
 if __name__ == "__main__":
 
-    clas = "music" # book dvd music
+    clas = sys.argv[1] # book dvd music
     prodCount = 0
     
-    outputPath = "/home/laboratory/corpus/TotalOutput/100d/music_4_6/";
+    outputPath = "/home/laboratory/corpus/TotalOutput/"+ sys.argv[2] +"d/"+clas+"_"+ sys.argv[3] +"_"+ sys.argv[4] +"/";
     labelPath = "/home/laboratory/corpus/Serializer/test_"+clas+"_label.txt"
     bestPath = outputPath+"/test_best.txt"
     if(not os.path.exists(bestPath)):

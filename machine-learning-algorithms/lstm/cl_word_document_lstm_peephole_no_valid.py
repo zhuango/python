@@ -797,7 +797,7 @@ if __name__ == '__main__':
     f.close()
     
     # See function train for all possible parameter and there definition.
-    categories = ['book']#, 'dvd', 'music'
+    categories = ['dvd', 'music', 'book']#, 'dvd', 'music'
     dimensions = [150] # 100, 150, 250
     sentimentDim = 50
     type = 'semantic_sentiment'
@@ -812,8 +812,10 @@ if __name__ == '__main__':
         print(str(pid) + " is running.\n")
         time.sleep(5 * 60)
 
-    # for dimension in dimensions:
-    #     for category in categories:
+    for dimension in dimensions:
+        for category in categories:
+            SingleProcess(type,category,150,sentimentDim,SerializerDir,TotalOutputDir,3,7)
+            SingleProcess(type,category,150,sentimentDim,SerializerDir,TotalOutputDir,7,3)
     #         argsForProcess = (type,category,dimension,sentimentDim,SerializerDir,TotalOutputDir,9,1)
     #         p = Process(target=SingleProcess, args=argsForProcess)
     #         p.start()
@@ -830,8 +832,11 @@ if __name__ == '__main__':
     # SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir,2,8)
     # SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir,8,2)
     
-    SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,6,4)
-    SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,9,1)
-    SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,9,1)
+    #SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,6,4)
+    #SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,9,1)
+    #SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,9,1)
     
-    SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,8,2)
+    #SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,8,2)
+    #SingleProcess(type,"music",150,sentimentDim,SerializerDir,TotalOutputDir,4,6)
+    #SingleProcess(type,"dvd",150,sentimentDim,SerializerDir,TotalOutputDir,1,9)
+    #SingleProcess(type,"book",150,sentimentDim,SerializerDir,TotalOutputDir,4,6)
