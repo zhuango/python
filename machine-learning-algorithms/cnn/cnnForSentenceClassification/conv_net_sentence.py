@@ -152,9 +152,10 @@ def train_conv_net(datasets,
         test_pred_layers.append(test_layer0_output.flatten(2))
     test_layer1_input = T.concatenate(test_pred_layers, 1)
     test_y_pred = classifier.predict(test_layer1_input)
+    test_y_pred_p = classifier.predict_p(test_layer1_input)
     test_error = T.mean(T.neq(test_y_pred, y))
     test_model_all = theano.function([x,y], test_error, allow_input_downcast = True)
-    test_y_pred_func = theano.function([x], test_y_pred, allow_input_downcast = True)   
+    test_y_pred_func = theano.function([x], test_y_pred_p, allow_input_downcast = True)   
     
     np.savetxt(outputPath + "/label.txt", test_set_y, fmt='%d', delimiter=' ')
     #start training over mini-batches
