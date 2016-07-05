@@ -9,17 +9,22 @@ def build_data_cv(data_folder, clean_string=True):
     Loads data
     """
     revs = []
-    train_pos_file = data_folder[0]
-    train_neg_file = data_folder[1]
-    test_pos_file = data_folder[2]
-    test_neg_file = data_folder[3]
+    train_context_file = data_folder[0]
+    train_label_file = data_folder[1]
+    test_context_file = data_folder[2]
+    test_label_file = data_folder[3]
 
     trainTag = 0
     testTag = 1
 
+    posTag = "+1"
+    negPos = "-1"
+
     vocab = defaultdict(float)
-    with open(train_pos_file, "rb") as f:
+    with open(train_context_file, "rb") as f:
+        train_label = open(train_label_file, "r")
         for line in f:       
+            label = train_label.readline();
             rev = []
             rev.append(line.strip())
             if clean_string:
@@ -29,14 +34,20 @@ def build_data_cv(data_folder, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
-            datum  = {"y":1, 
+            if label == posTag:
+                polarity = 1;
+            else:
+                polarity = 0;
+            datum  = {"y":polarity, 
                       "text": orig_rev,                             
                       "num_words": len(orig_rev.split()),
                       "split": trainTag}
                       # "split": np.random.randint(0,cv)}
             revs.append(datum)
-    with open(train_neg_file, "rb") as f:
+    with open(test_context_file, "rb") as f:
+        test_label = open(test_label_file, "r")
         for line in f:       
+            label = test_label.readline().strip();
             rev = []
             rev.append(line.strip())
             if clean_string:
@@ -46,46 +57,17 @@ def build_data_cv(data_folder, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
-            datum  = {"y":0, 
-                      "text": orig_rev,                             
-                      "num_words": len(orig_rev.split()),
-                      "split": trainTag}
-                      # "split": np.random.randint(0,cv)}
-            revs.append(datum)
-    with open(test_pos_file, "rb") as f:
-        for line in f:       
-            rev = []
-            rev.append(line.strip())
-            if clean_string:
-                orig_rev = clean_str(" ".join(rev))
+            if label == posTag:
+                polarity = 1;
             else:
-                orig_rev = " ".join(rev).lower()
-            words = set(orig_rev.split())
-            for word in words:
-                vocab[word] += 1
-            datum  = {"y":1, 
+                polarity = 0;
+            datum  = {"y":polarity, 
                       "text": orig_rev,                             
                       "num_words": len(orig_rev.split()),
                       "split": testTag}
                       # "split": np.random.randint(0,cv)}
             revs.append(datum)
-    with open(test_neg_file, "rb") as f:
-        for line in f:       
-            rev = []
-            rev.append(line.strip())
-            if clean_string:
-                orig_rev = clean_str(" ".join(rev))
-            else:
-                orig_rev = " ".join(rev).lower()
-            words = set(orig_rev.split())
-            for word in words:
-                vocab[word] += 1
-            datum  = {"y":0, 
-                      "text": orig_rev,                             
-                      "num_words": len(orig_rev.split()),
-                      "split": testTag}
-                      # "split": np.random.randint(0,cv)}
-            revs.append(datum)
+   
     return revs, vocab
     
 def get_W(word_vecs, k=100):
@@ -152,9 +134,9 @@ def add_unknown_words(word_vecs, vocab, min_df=1, k=100):
     """
     for word in vocab:
         if word not in word_vecs and vocab[word] >= min_df:
-            print("************************")
-            print(word)
-            print("************************")
+            # print("************************")
+            # print(word)
+            # print("************************")
             word_vecs[word] = np.random.uniform(-0.25,0.25,k)  
 
 def clean_str(string, TREC=False):
@@ -192,17 +174,17 @@ if __name__=="__main__":
     inputInfo = json.load(cnnJson)
     cnnJson.close()
 
-    TrainPosFile = inputInfo["TrainPos"]
-    TrainNegFile = inputInfo["TrainNeg"]
-    TestPosFile = inputInfo["TestPos"]
-    TestNegFile = inputInfo["TestNeg"]
+    TraiContextFile = inputInfo["TraiContext"]
+    TestContextFile = inputInfo["TestContext"]
+    TraiLabelFile = inputInfo["TraiLabel"]
+    TestLabelFile = inputInfo["TestLabel"]
     wordVectorFile = inputInfo["WordVector"]
     outputPath = inputInfo["OutPutPath"]
     mrPath = inputInfo["mrPath"]
     k = 50
 
     w2v_file = wordVectorFile
-    data_folder = [TrainPosFile,TrainNegFile, TestPosFile, TestNegFile]    
+    data_folder = [TraiContextFile, TraiLabelFile, TestContextFile, TestLabelFile]    
     print "loading data...",        
     revs, vocab = build_data_cv(data_folder,clean_string=True)
     max_l = np.max(pd.DataFrame(revs)["num_words"])

@@ -183,6 +183,9 @@ def train_conv_net(datasets,
         pred = test_y_pred_func(test_set_x)
 
         print('epoch: %i, training time: %.2f secs, train perf: %.2f %%, val perf: %.2f %%' % (epoch, time.time()-start_time, train_perf * 100., val_perf*100.))
+        test_loss = test_model_all(test_set_x,test_set_y)        
+        test_perf = 1- test_loss
+        print("test perf: %.2f" %(test_perf * 100.));
         if val_perf >= best_val_perf:
             best_val_perf = val_perf
             test_loss = test_model_all(test_set_x,test_set_y)        
@@ -298,10 +301,6 @@ if __name__=="__main__":
     inputInfo = json.load(cnnJson)
     cnnJson.close()
 
-    TrainPosFile = inputInfo["TrainPos"]
-    TrainNegFile = inputInfo["TrainNeg"]
-    TestPosFile = inputInfo["TestPos"]
-    TestNegFile = inputInfo["TestNeg"]
     wordVectorFile = inputInfo["WordVector"]
     outputPath = inputInfo["OutPutPath"]
     if not os.path.exists(outputPath):
