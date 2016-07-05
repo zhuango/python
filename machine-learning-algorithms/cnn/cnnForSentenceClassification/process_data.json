@@ -1,0 +1,9 @@
+{
+    "TrainPos": "/home/laboratory/corpusYang/context.train.pos",
+    "TrainNeg": "/home/laboratory/corpusYang/context.train.neg",
+    "TestPos": "/home/laboratory/corpusYang/context.test.pos",
+    "TestNeg": "/home/laboratory/corpusYang/context.test.neg",
+    "WordVector": "/home/laboratory/corpusYang/candidateWordAndCuecontextVec50_trim.txt",
+    "mrPath":"/home/laboratory/corpusYang/mr.p",
+    "OutPutPath": "/home/laboratory/corpusYang/"
+}
