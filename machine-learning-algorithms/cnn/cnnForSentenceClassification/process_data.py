@@ -24,7 +24,7 @@ def build_data_cv(data_folder, clean_string=True):
     with open(train_context_file, "rb") as f:
         train_label = open(train_label_file, "r")
         for line in f:       
-            label = train_label.readline();
+            label = train_label.readline().strip();
             rev = []
             rev.append(line.strip())
             if clean_string:
@@ -34,6 +34,7 @@ def build_data_cv(data_folder, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
+            polarity = 0
             if label == posTag:
                 polarity = 1;
             else:
@@ -44,6 +45,7 @@ def build_data_cv(data_folder, clean_string=True):
                       "split": trainTag}
                       # "split": np.random.randint(0,cv)}
             revs.append(datum)
+        train_label.close()
     with open(test_context_file, "rb") as f:
         test_label = open(test_label_file, "r")
         for line in f:       
@@ -57,6 +59,7 @@ def build_data_cv(data_folder, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
+            polarity = 0
             if label == posTag:
                 polarity = 1;
             else:
@@ -67,6 +70,7 @@ def build_data_cv(data_folder, clean_string=True):
                       "split": testTag}
                       # "split": np.random.randint(0,cv)}
             revs.append(datum)
+        test_label.close()
    
     return revs, vocab
     

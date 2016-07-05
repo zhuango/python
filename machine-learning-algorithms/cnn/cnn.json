@@ -1,6 +1,6 @@
 {
-    "CorpusPath_OS": "/home/laboratory/corpus/",
-    "CnnOutputPath_OS": "/home/laboratory/corpus_newDict_AddMoreNegativeWords/cnn_output/",
-    "CorpusPath": "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/",
-    "CnnOutputPath": "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/cnn_output/"
+    "CorpusPath": "/home/laboratory/corpus/",
+    "CnnOutputPath": "/home/laboratory/corpus/cnn_output/",
+    "CorpusPath_OS": "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/",
+    "CnnOutputPath_OS": "G:/liuzhuang/corpus_newDict_AddMoreNegativeWords/cnn_output/"
 }
