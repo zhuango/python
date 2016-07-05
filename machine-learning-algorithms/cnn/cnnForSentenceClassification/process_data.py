@@ -4,15 +4,21 @@ from collections import defaultdict
 import sys, re
 import pandas as pd
 
-def build_data_cv(data_folder, cv=10, clean_string=True):
+def build_data_cv(data_folder, clean_string=True):
     """
-    Loads data and split into 10 folds.
+    Loads data
     """
     revs = []
-    pos_file = data_folder[0]
-    neg_file = data_folder[1]
+    train_pos_file = data_folder[0]
+    train_neg_file = data_folder[1]
+    test_pos_file = data_folder[2]
+    test_neg_file = data_folder[3]
+
+    trainTag = 0
+    testTag = 1
+
     vocab = defaultdict(float)
-    with open(pos_file, "rb") as f:
+    with open(train_pos_file, "rb") as f:
         for line in f:       
             rev = []
             rev.append(line.strip())
@@ -26,9 +32,10 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
             datum  = {"y":1, 
                       "text": orig_rev,                             
                       "num_words": len(orig_rev.split()),
-                      "split": np.random.randint(0,cv)}
+                      "split": trainTag}
+                      # "split": np.random.randint(0,cv)}
             revs.append(datum)
-    with open(neg_file, "rb") as f:
+    with open(train_neg_file, "rb") as f:
         for line in f:       
             rev = []
             rev.append(line.strip())
@@ -42,11 +49,46 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
             datum  = {"y":0, 
                       "text": orig_rev,                             
                       "num_words": len(orig_rev.split()),
-                      "split": np.random.randint(0,cv)}
+                      "split": trainTag}
+                      # "split": np.random.randint(0,cv)}
+            revs.append(datum)
+    with open(test_pos_file, "rb") as f:
+        for line in f:       
+            rev = []
+            rev.append(line.strip())
+            if clean_string:
+                orig_rev = clean_str(" ".join(rev))
+            else:
+                orig_rev = " ".join(rev).lower()
+            words = set(orig_rev.split())
+            for word in words:
+                vocab[word] += 1
+            datum  = {"y":1, 
+                      "text": orig_rev,                             
+                      "num_words": len(orig_rev.split()),
+                      "split": testTag}
+                      # "split": np.random.randint(0,cv)}
+            revs.append(datum)
+    with open(test_neg_file, "rb") as f:
+        for line in f:       
+            rev = []
+            rev.append(line.strip())
+            if clean_string:
+                orig_rev = clean_str(" ".join(rev))
+            else:
+                orig_rev = " ".join(rev).lower()
+            words = set(orig_rev.split())
+            for word in words:
+                vocab[word] += 1
+            datum  = {"y":0, 
+                      "text": orig_rev,                             
+                      "num_words": len(orig_rev.split()),
+                      "split": testTag}
+                      # "split": np.random.randint(0,cv)}
             revs.append(datum)
     return revs, vocab
     
-def get_W(word_vecs, k=300):
+def get_W(word_vecs, k=100):
     """
     Get word matrix. W[i] is the vector for word indexed by i
     """
@@ -56,6 +98,11 @@ def get_W(word_vecs, k=300):
     W[0] = np.zeros(k, dtype='float32')
     i = 1
     for word in word_vecs:
+        # print("#############################")
+        # print(word_vecs[word].shape)
+        # print(word)
+        # print(W[i].shape)
+        # print("#############################")
         W[i] = word_vecs[word]
         word_idx_map[word] = i
         i += 1
@@ -85,13 +132,29 @@ def load_bin_vec(fname, vocab):
                 f.read(binary_len)
     return word_vecs
 
-def add_unknown_words(word_vecs, vocab, min_df=1, k=300):
+def load_vec(fname, vocab):
+    """
+    format: word vec[50]
+    """
+    word_vecs = {}
+    with open(fname, "rb") as f:
+        for line in f:
+            strs =line.strip().split(' ')
+            if strs[0] in vocab:
+                word_vecs[strs[0]] = np.array([float(elem) for elem in strs[1:]], dtype='float32')
+
+    return word_vecs
+
+def add_unknown_words(word_vecs, vocab, min_df=1, k=100):
     """
     For words that occur in at least min_df documents, create a separate word vector.    
     0.25 is chosen so the unknown vectors have (approximately) same variance as pre-trained ones
     """
     for word in vocab:
         if word not in word_vecs and vocab[word] >= min_df:
+            print("************************")
+            print(word)
+            print("************************")
             word_vecs[word] = np.random.uniform(-0.25,0.25,k)  
 
 def clean_str(string, TREC=False):
@@ -122,25 +185,40 @@ def clean_str_sst(string):
     string = re.sub(r"\s{2,}", " ", string)    
     return string.strip().lower()
 
+import json
+
 if __name__=="__main__":    
-    w2v_file = sys.argv[1]     
-    data_folder = ["rt-polarity.pos","rt-polarity.neg"]    
+    cnnJson = open("process_data.json", "r")
+    inputInfo = json.load(cnnJson)
+    cnnJson.close()
+
+    TrainPosFile = inputInfo["TrainPos"]
+    TrainNegFile = inputInfo["TrainNeg"]
+    TestPosFile = inputInfo["TestPos"]
+    TestNegFile = inputInfo["TestNeg"]
+    wordVectorFile = inputInfo["WordVector"]
+    outputPath = inputInfo["OutPutPath"]
+    mrPath = inputInfo["mrPath"]
+    k = 50
+
+    w2v_file = wordVectorFile
+    data_folder = [TrainPosFile,TrainNegFile, TestPosFile, TestNegFile]    
     print "loading data...",        
-    revs, vocab = build_data_cv(data_folder, cv=10, clean_string=True)
+    revs, vocab = build_data_cv(data_folder,clean_string=True)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
     print "data loaded!"
     print "number of sentences: " + str(len(revs))
     print "vocab size: " + str(len(vocab))
     print "max sentence length: " + str(max_l)
     print "loading word2vec vectors...",
-    w2v = load_bin_vec(w2v_file, vocab)
+    w2v = load_vec(w2v_file, vocab)
     print "word2vec loaded!"
     print "num words already in word2vec: " + str(len(w2v))
-    add_unknown_words(w2v, vocab)
-    W, word_idx_map = get_W(w2v)
+    add_unknown_words(w2v, vocab, k = k)
+    W, word_idx_map = get_W(w2v, k)
     rand_vecs = {}
-    add_unknown_words(rand_vecs, vocab)
-    W2, _ = get_W(rand_vecs)
-    cPickle.dump([revs, W, W2, word_idx_map, vocab], open("mr.p", "wb"))
+    add_unknown_words(rand_vecs, vocab, k = k)
+    W2, _ = get_W(rand_vecs, k)
+    cPickle.dump([revs, W, W2, word_idx_map, vocab], open(mrPath, "wb"))
     print "dataset created!"
     

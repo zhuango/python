@@ -46,7 +46,8 @@ def train_conv_net(datasets,
                    conv_non_linear="relu",
                    activations=[Iden],
                    sqr_norm_lim=9,
-                   non_static=True):
+                   non_static=True,
+                   outputPath = ""):
     """
     Train a simple conv net
     img_h = sentence length (padded where necessary)
@@ -152,8 +153,10 @@ def train_conv_net(datasets,
     test_layer1_input = T.concatenate(test_pred_layers, 1)
     test_y_pred = classifier.predict(test_layer1_input)
     test_error = T.mean(T.neq(test_y_pred, y))
-    test_model_all = theano.function([x,y], test_error, allow_input_downcast = True)   
+    test_model_all = theano.function([x,y], test_error, allow_input_downcast = True)
+    test_y_pred_func = theano.function([x], test_y_pred, allow_input_downcast = True)   
     
+    np.savetxt(outputPath + "/label.txt", test_set_y, fmt='%d', delimiter=' ')
     #start training over mini-batches
     print '... training'
     epoch = 0
@@ -175,12 +178,16 @@ def train_conv_net(datasets,
         train_losses = [test_model(i) for i in xrange(n_train_batches)]
         train_perf = 1 - np.mean(train_losses)
         val_losses = [val_model(i) for i in xrange(n_val_batches)]
-        val_perf = 1- np.mean(val_losses)                        
+        val_perf = 1- np.mean(val_losses)
+        pred = test_y_pred_func(test_set_x)
+
         print('epoch: %i, training time: %.2f secs, train perf: %.2f %%, val perf: %.2f %%' % (epoch, time.time()-start_time, train_perf * 100., val_perf*100.))
         if val_perf >= best_val_perf:
             best_val_perf = val_perf
             test_loss = test_model_all(test_set_x,test_set_y)        
-            test_perf = 1- test_loss         
+            test_perf = 1- test_loss
+            np.savetxt(outputPath + "/pred_best.txt", pred, fmt='%.5f', delimiter=' ');
+        np.savetxt(outputPath + "/pred_" + str(epoch) + ".txt", pred, fmt='%.5f', delimiter=' ');
     return test_perf
 
 def shared_dataset(data_xy, borrow=True):
@@ -283,10 +290,26 @@ def make_idx_data_cv(revs, word_idx_map, cv, max_l=51, k=300, filter_h=5):
     test = np.array(test,dtype="int")
     return [train, test]     
   
-   
+import json
+import os
 if __name__=="__main__":
+    cnnJson = open("process_data.json", "r")
+    inputInfo = json.load(cnnJson)
+    cnnJson.close()
+
+    TrainPosFile = inputInfo["TrainPos"]
+    TrainNegFile = inputInfo["TrainNeg"]
+    TestPosFile = inputInfo["TestPos"]
+    TestNegFile = inputInfo["TestNeg"]
+    wordVectorFile = inputInfo["WordVector"]
+    outputPath = inputInfo["OutPutPath"]
+    if not os.path.exists(outputPath):
+        os.makedirs(outputPath);
+    mrPath = inputInfo["mrPath"]
+    k = 50
+
     print "loading data...",
-    x = cPickle.load(open("mr.p","rb"))
+    x = cPickle.load(open(mrPath,"rb"))
     revs, W, W2, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4]
     print "data loaded!"
     mode= sys.argv[1]
@@ -305,11 +328,13 @@ if __name__=="__main__":
         print "using: word2vec vectors"
         U = W
     results = []
-    r = range(0,10)    
-    for i in r:
-        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=56,k=300, filter_h=5)
+    r = range(0,10)
+    TestTag = 1
+    for i in [TestTag]:
+        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=56,k=k, filter_h=5)
         perf = train_conv_net(datasets,
                               U,
+                              img_w=k,
                               lr_decay=0.95,
                               filter_hs=[3,4,5],
                               conv_non_linear="relu",
@@ -319,7 +344,8 @@ if __name__=="__main__":
                               sqr_norm_lim=9,
                               non_static=non_static,
                               batch_size=50,
-                              dropout_rate=[0.5])
+                              dropout_rate=[0.5],
+                              outputPath = outputPath)
         print "cv: " + str(i) + ", perf: " + str(perf)
         results.append(perf)  
     print str(np.mean(results))

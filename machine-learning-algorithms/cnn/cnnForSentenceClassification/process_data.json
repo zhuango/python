@@ -5,5 +5,5 @@
     "TestNeg": "/home/laboratory/corpusYang/context.test.neg",
     "WordVector": "/home/laboratory/corpusYang/candidateWordAndCuecontextVec50_trim.txt",
     "mrPath":"/home/laboratory/corpusYang/mr.p",
-    "OutPutPath": "/home/laboratory/corpusYang/"
+    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/"
 }
