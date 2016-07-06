@@ -21,7 +21,7 @@ def build_data_cv(data_folder, clean_string=True):
     negPos = "-1"
 
     vocab = defaultdict(float)
-    with open(train_context_file, "rb") as f:
+    with open(train_context_file, "r") as f:
         train_label = open(train_label_file, "r")
         for line in f:       
             label = train_label.readline().strip();
@@ -31,6 +31,7 @@ def build_data_cv(data_folder, clean_string=True):
                 orig_rev = clean_str(" ".join(rev))
             else:
                 orig_rev = " ".join(rev).lower()
+            #print(orig_rev)##############
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
@@ -46,7 +47,7 @@ def build_data_cv(data_folder, clean_string=True):
                       # "split": np.random.randint(0,cv)}
             revs.append(datum)
         train_label.close()
-    with open(test_context_file, "rb") as f:
+    with open(test_context_file, "r") as f:
         test_label = open(test_label_file, "r")
         for line in f:       
             label = test_label.readline().strip();
@@ -56,6 +57,7 @@ def build_data_cv(data_folder, clean_string=True):
                 orig_rev = clean_str(" ".join(rev))
             else:
                 orig_rev = " ".join(rev).lower()
+            #print(orig_rev)##############
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
@@ -123,10 +125,12 @@ def load_vec(fname, vocab):
     format: word vec[50]
     """
     word_vecs = {}
+    #print(vocab)
     with open(fname, "rb") as f:
         for line in f:
             strs =line.strip().split(' ')
             if strs[0] in vocab:
+                #print(strs[0])
                 word_vecs[strs[0]] = np.array([float(elem) for elem in strs[1:]], dtype='float32')
 
     return word_vecs
@@ -190,7 +194,7 @@ if __name__=="__main__":
     w2v_file = wordVectorFile
     data_folder = [TraiContextFile, TraiLabelFile, TestContextFile, TestLabelFile]    
     print "loading data...",        
-    revs, vocab = build_data_cv(data_folder,clean_string=True)
+    revs, vocab = build_data_cv(data_folder,clean_string=False)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
     print "data loaded!"
     print "number of sentences: " + str(len(revs))
