@@ -6,7 +6,11 @@ def sigmoid(z):
     result = numpy.zeros(z.shape);
     result = 1.0 / (1.0 + numpy.exp(-z));
     return result;
-
+def sigmoidGradient(z):
+    g = numpy.zeros(size(z));
+    g = sigmoid(z) * (1 - sigmoid(z));
+    return g
+    
 def predict(theta1, theta2, X):
     m = len(X);
     num_labels = len(theta2);
