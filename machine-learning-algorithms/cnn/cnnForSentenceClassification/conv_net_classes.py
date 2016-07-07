@@ -28,7 +28,7 @@ def Tanh(x):
 def Iden(x):
     y = x
     return(y)
-        
+
 class HiddenLayer(object):
     """
     Class for HiddenLayer
@@ -39,13 +39,13 @@ class HiddenLayer(object):
         self.input = input
         self.activation = activation
 
-        if W is None:            
+        if W is None:
             if activation.func_name == "ReLU":
                 W_values = numpy.asarray(0.01 * rng.standard_normal(size=(n_in, n_out)), dtype=theano.config.floatX)
-            else:                
+            else:
                 W_values = numpy.asarray(rng.uniform(low=-numpy.sqrt(6. / (n_in + n_out)), high=numpy.sqrt(6. / (n_in + n_out)),
                                                      size=(n_in, n_out)), dtype=theano.config.floatX)
-            W = theano.shared(value=W_values, name='W')        
+            W = theano.shared(value=W_values, name='W')
         if b is None:
             b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
             b = theano.shared(value=b_values, name='b')
@@ -59,7 +59,7 @@ class HiddenLayer(object):
             lin_output = T.dot(input, self.W)
 
         self.output = (lin_output if activation is None else activation(lin_output))
-    
+
         # parameters of the model
         if use_bias:
             self.params = [self.W, self.b]
@@ -125,7 +125,7 @@ class MLPDropout(object):
             next_layer_input = next_layer.output
             #first_layer = False
             layer_counter += 1
-        
+
         # Set up the output layer
         n_in, n_out = self.weight_matrix_sizes[-1]
         dropout_output_layer = LogisticRegression(
@@ -171,7 +171,7 @@ class MLPDropout(object):
             else:
                 p_y_given_x = T.nnet.softmax(T.dot(next_layer_input, layer.W) + layer.b)
         return p_y_given_x
-        
+
 class MLP(object):
     """Multi-Layer Perceptron Class
 
@@ -234,7 +234,7 @@ class MLP(object):
         # the parameters of the model are the parameters of the two layer it is
         # made out of
         self.params = self.hiddenLayer.params + self.logRegressionLayer.params
-        
+
 class LogisticRegression(object):
     """Multi-class Logistic Regression Class
 
@@ -250,15 +250,15 @@ class LogisticRegression(object):
     :type input: theano.tensor.TensorType
     :param input: symbolic variable that describes the input of the
     architecture (one minibatch)
-    
+
     :type n_in: int
     :param n_in: number of input units, the dimension of the space in
     which the datapoints lie
-    
+
     :type n_out: int
     :param n_out: number of output units, the dimension of the space in
     which the labels lie
-    
+
     """
 
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
@@ -292,15 +292,15 @@ class LogisticRegression(object):
         of this model under a given target distribution.
 
     .. math::
-    
+
     \frac{1}{|\mathcal{D}|} \mathcal{L} (\theta=\{W,b\}, \mathcal{D}) =
     \frac{1}{|\mathcal{D}|} \sum_{i=0}^{|\mathcal{D}|} \log(P(Y=y^{(i)}|x^{(i)}, W,b)) \\
     \ell (\theta=\{W,b\}, \mathcal{D})
-    
+
     :type y: theano.tensor.TensorType
     :param y: corresponds to a vector that gives for each example the
     correct label
-    
+
     Note: we use the mean instead of the sum so that
     the learning rate is less dependent on the batch size
     """
@@ -319,7 +319,7 @@ class LogisticRegression(object):
     def errors(self, y):
         """Return a float representing the number of errors in the minibatch ;
     zero one loss over the size of the minibatch
-    
+
     :type y: theano.tensor.TensorType
     :param y: corresponds to a vector that gives for each example the
     correct label
@@ -336,7 +336,7 @@ class LogisticRegression(object):
             return T.mean(T.neq(self.y_pred, y))
         else:
             raise NotImplementedError()
-        
+
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
@@ -377,15 +377,15 @@ class LeNetConvPoolLayer(object):
         fan_out = (filter_shape[0] * numpy.prod(filter_shape[2:]) /numpy.prod(poolsize))
         # initialize weights with random weights
         if self.non_linear=="none" or self.non_linear=="relu":
-            self.W = theano.shared(numpy.asarray(rng.uniform(low=-0.01,high=0.01,size=filter_shape), 
+            self.W = theano.shared(numpy.asarray(rng.uniform(low=-0.01,high=0.01,size=filter_shape),
                                                 dtype=theano.config.floatX),borrow=True,name="W_conv")
         else:
             W_bound = numpy.sqrt(6. / (fan_in + fan_out))
             self.W = theano.shared(numpy.asarray(rng.uniform(low=-W_bound, high=W_bound, size=filter_shape),
-                dtype=theano.config.floatX),borrow=True,name="W_conv")   
+                dtype=theano.config.floatX),borrow=True,name="W_conv")
         b_values = numpy.zeros((filter_shape[0],), dtype=theano.config.floatX)
         self.b = theano.shared(value=b_values, borrow=True, name="b_conv")
-        
+
         # convolve input feature maps with filters
         conv_out = conv.conv2d(input=input, filters=self.W,filter_shape=self.filter_shape, image_shape=self.image_shape)
         if self.non_linear=="tanh":
@@ -398,7 +398,7 @@ class LeNetConvPoolLayer(object):
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
             self.output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
         self.params = [self.W, self.b]
-        
+
     def predict(self, new_data, batch_size):
         """
         predict for new data
@@ -415,4 +415,4 @@ class LeNetConvPoolLayer(object):
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
             output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
         return output
-        
+
