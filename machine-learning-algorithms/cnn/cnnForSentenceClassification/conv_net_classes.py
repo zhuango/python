@@ -340,7 +340,7 @@ class LogisticRegression(object):
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
+    def __init__(self, rng, top_k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -368,7 +368,7 @@ class LeNetConvPoolLayer(object):
         self.image_shape = image_shape
         self.poolsize = poolsize
         self.non_linear = non_linear
-        self.k = k
+        self.top_k = top_k
         # there are "num input feature maps * filter height * filter width"
         # inputs to each hidden unit
         fan_in = numpy.prod(filter_shape[1:])
@@ -394,7 +394,7 @@ class LeNetConvPoolLayer(object):
             self.output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
         elif self.non_linear=="relu":  
             conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))      
-            self.output = self.k_max_pool(conv_out_tanh, self.k)
+            self.output = self.k_max_pool(conv_out_tanh, self.top_k)
         else:
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
             self.output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
@@ -411,7 +411,7 @@ class LeNetConvPoolLayer(object):
             output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
         if self.non_linear=="relu": 
             conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))      
-            output = self.k_max_pool(conv_out_tanh, self.k)
+            output = self.k_max_pool(conv_out_tanh, self.top_k)
         else:
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
             output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
