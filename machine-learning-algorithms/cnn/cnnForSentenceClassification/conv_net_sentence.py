@@ -338,7 +338,7 @@ if __name__=="__main__":
         datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=10,k=k, filter_h=5)
         perf = train_conv_net(datasets,
                               U,
-                              k = 3,
+                              top_k = 3,
                               img_w=k,
                               lr_decay=0.95,
                               filter_hs=[3,4,5],
