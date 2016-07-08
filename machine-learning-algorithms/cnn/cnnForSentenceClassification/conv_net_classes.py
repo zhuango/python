@@ -340,7 +340,7 @@ class LogisticRegression(object):
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
+    def __init__(self, rng, k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -368,6 +368,7 @@ class LeNetConvPoolLayer(object):
         self.image_shape = image_shape
         self.poolsize = poolsize
         self.non_linear = non_linear
+        self.k = k
         # there are "num input feature maps * filter height * filter width"
         # inputs to each hidden unit
         fan_in = numpy.prod(filter_shape[1:])
@@ -391,9 +392,9 @@ class LeNetConvPoolLayer(object):
         if self.non_linear=="tanh":
             conv_out_tanh = T.tanh(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
             self.output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
-        elif self.non_linear=="relu":
-            conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
-            self.output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
+        elif self.non_linear=="relu":  
+            conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))      
+            self.output = self.k_max_pool(conv_out_tanh, self.k)
         else:
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
             self.output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
@@ -408,11 +409,40 @@ class LeNetConvPoolLayer(object):
         if self.non_linear=="tanh":
             conv_out_tanh = T.tanh(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
             output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
-        if self.non_linear=="relu":
-            conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
-            output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
+        if self.non_linear=="relu": 
+            conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))      
+            output = self.k_max_pool(conv_out_tanh, self.k)
         else:
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
             output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
         return output
 
+    def k_max_pool(self, x, k):
+        """
+        perform k-max pool on the input along the rows
+
+        input: theano.tensor.tensor4
+           
+        k: theano.tensor.iscalar
+            the k parameter
+
+        Returns: 
+        4D tensor
+        """
+        x = T.reshape(x, (x.shape[0], x.shape[1], 1, x.shape[2] * x.shape[3]))
+        ind = T.argsort(x, axis = 3)
+
+        sorted_ind = T.sort(ind[:,:,:, -k:], axis = 3)
+        
+        dim0, dim1, dim2, dim3 = sorted_ind.shape
+        
+        indices_dim0 = T.arange(dim0).repeat(dim1 * dim2 * dim3)
+        indices_dim1 = T.arange(dim1).repeat(dim2 * dim3).reshape((dim1*dim2*dim3, 1)).repeat(dim0, axis=1).T.flatten()
+        indices_dim2 = T.arange(dim2).repeat(dim3).reshape((dim2*dim3, 1)).repeat(dim0 * dim1, axis = 1).T.flatten()
+        
+        result = x[indices_dim0, indices_dim1, indices_dim2, sorted_ind.flatten()].reshape(sorted_ind.shape)
+        shape = (result.shape[0],result.shape[1], result.shape[2] * result.shape[3], 1)
+
+        result = T.reshape(result, shape)
+                
+        return result
