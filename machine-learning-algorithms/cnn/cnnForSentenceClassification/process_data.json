@@ -1,9 +1,10 @@
 {
+    "FeatureWord": "/home/laboratory/corpusYang/FeatureWord.dict",
     "TraiContext": "/home/laboratory/corpusYang/Ltrainword.context",
     "TraiLabel": "/home/laboratory/corpusYang/Ltrainlabel.txt",
     "TestContext": "/home/laboratory/corpusYang/Ltestword.context",
     "TestLabel": "/home/laboratory/corpusYang/Ltestlabel.txt",
-    "WordVector": "/home/laboratory/corpusYang/candidateWordAndCuecontextVec50_trim.txt",
+    "WordVector": "/home/laboratory/corpusYang/finalWordEmbeddings_50dim.txt",
     "mrPath":"/home/laboratory/corpusYang/mr.p",
-    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/"
+    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/newdata/"
 }

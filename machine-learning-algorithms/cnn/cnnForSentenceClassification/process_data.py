@@ -17,8 +17,8 @@ def build_data_cv(data_folder, clean_string=True):
     trainTag = 0
     testTag = 1
 
-    posTag = "+1"
-    negPos = "-1"
+    posTag = "1"
+    negPos = "0"
 
     vocab = defaultdict(float)
     with open(train_context_file, "r") as f:
@@ -94,6 +94,8 @@ def get_W(word_vecs, featureWordList, k=100):
         # print("#############################")
         if word in featureWordList:
             featureWordMap[i] = 1
+        else:
+            featureWordMap[i] = 0
         W[i] = word_vecs[word]
         word_idx_map[word] = i
         i += 1
@@ -132,9 +134,9 @@ def load_vec(fname, vocab):
     with open(fname, "rb") as f:
         for line in f:
             strs =line.strip().split(' ')
-            if strs[0] in vocab:
+            if str.lower(strs[0]) in vocab:
                 #print(strs[0])
-                word_vecs[strs[0]] = np.array([float(elem) for elem in strs[1:]], dtype='float32')
+                word_vecs[str.lower(strs[0])] = np.array([float(elem) for elem in strs[1:]], dtype='float32')
 
     return word_vecs
 
@@ -178,6 +180,13 @@ def clean_str_sst(string):
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
 
+def getFeatureWordList(filename):
+    wordlist = []
+    with open(filename, "r") as f:
+        for line in f:
+            wordlist.append(line.strip())
+    return wordlist
+
 import json
 
 if __name__=="__main__":
@@ -185,6 +194,7 @@ if __name__=="__main__":
     inputInfo = json.load(cnnJson)
     cnnJson.close()
 
+    FeatureWordFile = inputInfo["FeatureWord"]
     TraiContextFile = inputInfo["TraiContext"]
     TestContextFile = inputInfo["TestContext"]
     TraiLabelFile = inputInfo["TraiLabel"]
@@ -198,6 +208,7 @@ if __name__=="__main__":
     w2v_file = wordVectorFile
     data_folder = [TraiContextFile, TraiLabelFile, TestContextFile, TestLabelFile]
     print "loading data...",
+    #featureWordList = getFeatureWordList(FeatureWordFile)
     revs, vocab = build_data_cv(data_folder,clean_string=False)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
     print "data loaded!"

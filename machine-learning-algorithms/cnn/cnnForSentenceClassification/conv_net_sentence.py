@@ -346,7 +346,7 @@ if __name__=="__main__":
     r = range(0,10)
     TestTag = 1
     for i in [TestTag]:
-        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=10,k=k, filter_h=5)
+        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=101,k=k, filter_h=5)
         perf = train_conv_net(datasets,
                               U,
                               featureWordMap,
