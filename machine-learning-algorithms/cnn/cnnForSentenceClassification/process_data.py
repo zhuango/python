@@ -76,13 +76,14 @@ def build_data_cv(data_folder, clean_string=True):
 
     return revs, vocab
 
-def get_W(word_vecs, k=100):
+def get_W(word_vecs, featureWordList, k=100):
     """
     Get word matrix. W[i] is the vector for word indexed by i
     """
     vocab_size = len(word_vecs)
     word_idx_map = dict()
     W = np.zeros(shape=(vocab_size+1, k), dtype='float32')
+    featureWordMap = np.zeros(shape=(vocab_size + 1, 1), dtype=np.int)
     W[0] = np.zeros(k, dtype='float32')
     i = 1
     for word in word_vecs:
@@ -91,10 +92,12 @@ def get_W(word_vecs, k=100):
         # print(word)
         # print(W[i].shape)
         # print("#############################")
+        if word in featureWordList:
+            featureWordMap[i] = 1
         W[i] = word_vecs[word]
         word_idx_map[word] = i
         i += 1
-    return W, word_idx_map
+    return W, featureWordMap, word_idx_map
 
 def load_bin_vec(fname, vocab):
     """
@@ -190,6 +193,7 @@ if __name__=="__main__":
     outputPath = inputInfo["OutPutPath"]
     mrPath = inputInfo["mrPath"]
     k = 50
+    featureWordList = []
 
     w2v_file = wordVectorFile
     data_folder = [TraiContextFile, TraiLabelFile, TestContextFile, TestLabelFile]
@@ -205,10 +209,10 @@ if __name__=="__main__":
     print "word2vec loaded!"
     print "num words already in word2vec: " + str(len(w2v))
     add_unknown_words(w2v, vocab, k = k)
-    W, word_idx_map = get_W(w2v, k)
+    W, featureWordMap, word_idx_map = get_W(w2v, featureWordList, k)
     rand_vecs = {}
     add_unknown_words(rand_vecs, vocab, k = k)
-    W2, _ = get_W(rand_vecs, k)
-    cPickle.dump([revs, W, W2, word_idx_map, vocab], open(mrPath, "wb"))
+    W2, _, _ = get_W(rand_vecs, featureWordList, k)
+    cPickle.dump([revs, W, W2, featureWordMap, word_idx_map, vocab], open(mrPath, "wb"))
     print "dataset created!"
 

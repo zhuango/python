@@ -42,7 +42,7 @@ def InitializeWeights(input, selectMatrix, filter_shape):
 
 def train_conv_net(datasets,
                    U,
-                   specialWordMap = None,
+                   featureWordMap = None,
                    top_k = 1,
                    img_w=300,
                    filter_hs=[3,4,5],
@@ -67,8 +67,8 @@ def train_conv_net(datasets,
     lr_decay = adadelta decay parameter
     """
     rng = np.random.RandomState(3435)
-    if specialWordMap == None:
-        specialWordMap = numpy.zeros(U.shape)# has not been used yet.
+    if featureWordMap == None:
+        featureWordMap = numpy.zeros(U.shape)# has not been used yet.
 
     img_h = len(datasets[0][0])-1
     filter_w = img_w
@@ -88,7 +88,7 @@ def train_conv_net(datasets,
     index = T.lscalar()
     x = T.matrix('x')
     y = T.ivector('y')
-    wordMap = theano.shared(value = specialWordMap, name = "wordMap")#
+    wordMap = theano.shared(value = featureWordMap, name = "wordMap")#
     Words = theano.shared(value = U, name = "Words")
     zero_vec_tensor = T.vector()
     zero_vec = np.zeros(img_w)
@@ -325,7 +325,7 @@ if __name__=="__main__":
 
     print "loading data...",
     x = cPickle.load(open(mrPath,"rb"))
-    revs, W, W2, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4]
+    revs, W, W2, featureWordMap, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4], x[5]
     print "data loaded!"
     mode= sys.argv[1]
     word_vectors = sys.argv[2]
@@ -349,6 +349,7 @@ if __name__=="__main__":
         datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=10,k=k, filter_h=5)
         perf = train_conv_net(datasets,
                               U,
+                              featureWordMap,
                               top_k = 3,
                               img_w=k,
                               lr_decay=0.95,
