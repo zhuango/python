@@ -33,8 +33,16 @@ def Iden(x):
     y = x
     return(y)
 
+def InitializeWeights(input, selectMatrix, filter_shape):
+    #filter_shape: (feature_maps, 1, filter_h, filter_w)
+    #w = numpy.zeros(filter_shape);
+    rng = np.random.RandomState(3435)
+    w = numpy.asarray(rng.uniform(low=-0.01,high=0.01,size=filter_shape),dtype=theano.config.floatX)
+    return w
+
 def train_conv_net(datasets,
                    U,
+                   specialWordMap = None,
                    top_k = 1,
                    img_w=300,
                    filter_hs=[3,4,5],
@@ -59,7 +67,8 @@ def train_conv_net(datasets,
     lr_decay = adadelta decay parameter
     """
     rng = np.random.RandomState(3435)
-    specialWordMap = numpy.zeros(datasets[0].shape)# has not been used yet.
+    if specialWordMap == None:
+        specialWordMap = numpy.zeros(U.shape)# has not been used yet.
 
     img_h = len(datasets[0][0])-1
     filter_w = img_w
@@ -79,18 +88,20 @@ def train_conv_net(datasets,
     index = T.lscalar()
     x = T.matrix('x')
     y = T.ivector('y')
-    wordMap = T.matrix('wordmap')#
+    wordMap = theano.shared(value = specialWordMap, name = "wordMap")#
     Words = theano.shared(value = U, name = "Words")
     zero_vec_tensor = T.vector()
     zero_vec = np.zeros(img_w)
     set_zero = theano.function([zero_vec_tensor], updates=[(Words, T.set_subtensor(Words[0,:], zero_vec_tensor))], allow_input_downcast=True)
     layer0_input = Words[T.cast(x.flatten(),dtype="int32")].reshape((x.shape[0],1,x.shape[1],Words.shape[1]))
+    selectMatrix = wordMap[T.cast(x.flatten(),dtype="int32")].reshape((x.shape[0],1,x.shape[1], wordMap.shape[1]))
     conv_layers = []
     layer1_inputs = []
     for i in xrange(len(filter_hs)):
         filter_shape = filter_shapes[i]
         pool_size = pool_sizes[i]
-        conv_layer = LeNetConvPoolLayer(rng, top_k = top_k, input=layer0_input,image_shape=(batch_size, 1, img_h, img_w),
+        w = InitializeWeights(layer0_input, selectMatrix, filter_shape)
+        conv_layer = LeNetConvPoolLayer(rng, w, top_k = top_k, input=layer0_input,image_shape=(batch_size, 1, img_h, img_w),
                                 filter_shape=filter_shape, poolsize=pool_size, non_linear=conv_non_linear)
         layer1_input = conv_layer.output.flatten(2)
         conv_layers.append(conv_layer)

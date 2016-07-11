@@ -340,7 +340,7 @@ class LogisticRegression(object):
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, top_k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
+    def __init__(self, rng, w, top_k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -378,8 +378,7 @@ class LeNetConvPoolLayer(object):
         fan_out = (filter_shape[0] * numpy.prod(filter_shape[2:]) /numpy.prod(poolsize))
         # initialize weights with random weights
         if self.non_linear=="none" or self.non_linear=="relu":
-            self.W = theano.shared(numpy.asarray(rng.uniform(low=-0.01,high=0.01,size=filter_shape),
-                                                dtype=theano.config.floatX),borrow=True,name="W_conv")
+            self.W = theano.shared(value = w, borrow=True, name="W_conv")
         else:
             W_bound = numpy.sqrt(6. / (fan_in + fan_out))
             self.W = theano.shared(numpy.asarray(rng.uniform(low=-W_bound, high=W_bound, size=filter_shape),
