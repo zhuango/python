@@ -1,5 +1,5 @@
 {
-    "FeatureWord": "/home/laboratory/corpusYang/FeatureWord.dict",
+    "FeatureWord": "/home/laboratory/corpusYang/featureWrods/feature.word",
     "TraiContext": "/home/laboratory/corpusYang/Ltrainword.context",
     "TraiLabel": "/home/laboratory/corpusYang/Ltrainlabel.txt",
     "TestContext": "/home/laboratory/corpusYang/Ltestword.context",

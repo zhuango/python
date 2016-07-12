@@ -93,6 +93,7 @@ def get_W(word_vecs, featureWordList, k=100):
         # print(W[i].shape)
         # print("#############################")
         if word in featureWordList:
+            #print(word)###############################
             featureWordMap[i] = 1
         else:
             featureWordMap[i] = 0
@@ -184,7 +185,8 @@ def getFeatureWordList(filename):
     wordlist = []
     with open(filename, "r") as f:
         for line in f:
-            wordlist.append(line.strip())
+            for word in line.strip().split(" "):
+                wordlist.append(word)
     return wordlist
 
 import json
@@ -208,7 +210,7 @@ if __name__=="__main__":
     w2v_file = wordVectorFile
     data_folder = [TraiContextFile, TraiLabelFile, TestContextFile, TestLabelFile]
     print "loading data...",
-    #featureWordList = getFeatureWordList(FeatureWordFile)
+    featureWordList = getFeatureWordList(FeatureWordFile)
     revs, vocab = build_data_cv(data_folder,clean_string=False)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
     print "data loaded!"
