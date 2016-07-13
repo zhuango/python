@@ -4,7 +4,7 @@
     "TraiLabel": "/home/laboratory/corpusYang/Ltrainlabel.txt",
     "TestContext": "/home/laboratory/corpusYang/Ltestword.context",
     "TestLabel": "/home/laboratory/corpusYang/Ltestlabel.txt",
-    "WordVector": "/home/laboratory/corpusYang/finalWordEmbeddings_50dim.txt",
+    "WordVector": "/home/laboratory/corpusYang/glove.6B.200d_word2vec.txt.simple",
     "mrPath":"/home/laboratory/corpusYang/mr.p",
-    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/newdata/"
+    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/newdata_200/"
 }

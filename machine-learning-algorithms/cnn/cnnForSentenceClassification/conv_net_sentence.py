@@ -33,12 +33,28 @@ def Iden(x):
     y = x
     return(y)
 
-def InitializeWeights(input, selectMatrix, filter_shape):
+def InitializeWeights(input, selectMatrix, filter_shape, batch_size, pool_size):
     #filter_shape: (feature_maps, 1, filter_h, filter_w)
     #w = numpy.zeros(filter_shape);
     rng = np.random.RandomState(3435)
-    w = numpy.asarray(rng.uniform(low=-0.01,high=0.01,size=filter_shape),dtype=theano.config.floatX)
-    return w
+    selectvectors = input * selectMatrix
+
+    #w = theano.shared(value = numpy.asarray(rng.uniform(low=-0.01,high=0.01,size=filter_shape), dtype=theano.config.floatX),name = "wordMap")
+    w = theano.shared(value = numpy.zeros(shape=filter_shape, dtype=theano.config.floatX),name = "wordMap")
+
+    k = 0
+    stepLength = batch_size / filter_shape[0] + 1
+    while k < filter_shape[0]:
+        for j in range(stepLength):
+            for i in range(pool_size[0]):
+                #T.inc_subtensor(w[j+k][0], input[j+k][0][i:i+filter_shape[2]])
+                w = T.set_subtensor(w[j+k][0], input[j+k][0][i:i+filter_shape[2]])
+                #input[j+k][0][i:i+filter_shape[2]]
+                print(w.get_value()[j+k][0])
+                print(input[j+k][0][i:i+filter_shape[2]])
+        k += stepLength
+    print(w.get_value())#############
+    return w.get_value()
 
 def train_conv_net(datasets,
                    U,
@@ -66,10 +82,13 @@ def train_conv_net(datasets,
     sqr_norm_lim = s^2 in the paper
     lr_decay = adadelta decay parameter
     """
+    print(featureWordMap.shape)###########
+    print(U.shape)##########
     rng = np.random.RandomState(3435)
     if featureWordMap == None:
         featureWordMap = numpy.zeros(U.shape)# has not been used yet.
-
+    featureWordMap_broadcasting = numpy.ones(U.shape) * featureWordMap
+    print(featureWordMap_broadcasting)###########
     img_h = len(datasets[0][0])-1
     filter_w = img_w
     feature_maps = hidden_units[0]
@@ -88,7 +107,7 @@ def train_conv_net(datasets,
     index = T.lscalar()
     x = T.matrix('x')
     y = T.ivector('y')
-    wordMap = theano.shared(value = featureWordMap, name = "wordMap")#
+    wordMap = theano.shared(value = featureWordMap_broadcasting, name = "wordMap")#
     Words = theano.shared(value = U, name = "Words")
     zero_vec_tensor = T.vector()
     zero_vec = np.zeros(img_w)
@@ -100,8 +119,8 @@ def train_conv_net(datasets,
     for i in xrange(len(filter_hs)):
         filter_shape = filter_shapes[i]
         pool_size = pool_sizes[i]
-        w = InitializeWeights(layer0_input, selectMatrix, filter_shape)
-        conv_layer = LeNetConvPoolLayer(rng, w, top_k = top_k, input=layer0_input,image_shape=(batch_size, 1, img_h, img_w),
+        #w = InitializeWeights(layer0_input, selectMatrix, filter_shape, batch_size, pool_size)
+        conv_layer = LeNetConvPoolLayer(rng, selectMatrix, top_k = top_k, input=layer0_input,image_shape=(batch_size, 1, img_h, img_w),
                                 filter_shape=filter_shape, poolsize=pool_size, non_linear=conv_non_linear)
         layer1_input = conv_layer.output.flatten(2)
         conv_layers.append(conv_layer)
@@ -162,8 +181,9 @@ def train_conv_net(datasets,
     test_pred_layers = []
     test_size = test_set_x.shape[0]
     test_layer0_input = Words[T.cast(x.flatten(),dtype="int32")].reshape((test_size,1,img_h,Words.shape[1]))
+    test_selectMatrix = wordMap[T.cast(x.flatten(),dtype="int32")].reshape((test_size,1,img_h, wordMap.shape[1]))
     for conv_layer in conv_layers:
-        test_layer0_output = conv_layer.predict(test_layer0_input, test_size)
+        test_layer0_output = conv_layer.predict(test_layer0_input,test_selectMatrix, test_size)
         test_pred_layers.append(test_layer0_output.flatten(2))
     test_layer1_input = T.concatenate(test_pred_layers, 1)
     test_y_pred = classifier.predict(test_layer1_input)
@@ -321,7 +341,7 @@ if __name__=="__main__":
     if not os.path.exists(outputPath):
         os.makedirs(outputPath);
     mrPath = inputInfo["mrPath"]
-    k = 50
+    k = 200
 
     print "loading data...",
     x = cPickle.load(open(mrPath,"rb"))

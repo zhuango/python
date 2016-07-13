@@ -340,7 +340,7 @@ class LogisticRegression(object):
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, w, top_k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
+    def __init__(self, rng, selectMatrix, top_k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -378,7 +378,9 @@ class LeNetConvPoolLayer(object):
         fan_out = (filter_shape[0] * numpy.prod(filter_shape[2:]) /numpy.prod(poolsize))
         # initialize weights with random weights
         if self.non_linear=="none" or self.non_linear=="relu":
-            self.W = theano.shared(value = w, borrow=True, name="W_conv")
+            #self.W = theano.shared(value = w, borrow=True, name="W_conv")
+            self.W = theano.shared(numpy.asarray(rng.uniform(low=-0.01, high=0.01, size=filter_shape),
+                dtype=theano.config.floatX),borrow=True,name="W_conv")
         else:
             W_bound = numpy.sqrt(6. / (fan_in + fan_out))
             self.W = theano.shared(numpy.asarray(rng.uniform(low=-W_bound, high=W_bound, size=filter_shape),
@@ -387,7 +389,16 @@ class LeNetConvPoolLayer(object):
         self.b = theano.shared(value=b_values, borrow=True, name="b_conv")
 
         # convolve input feature maps with filters
+        selectMatrix= T.cast(selectMatrix,dtype=theano.config.floatX)
+        selectConv_W_size = filter_shape
+        selectConv_image_shape = self.image_shape#(self.image_shape[0], self.image_shape[1], self.image_shape[2], 1)
+        self.selectConv_W = theano.shared(numpy.asarray(rng.uniform(low=0, high=0.2, size=filter_shape),
+                dtype=theano.config.floatX),borrow=True,name="W_conv")
         conv_out = conv.conv2d(input=input, filters=self.W,filter_shape=self.filter_shape, image_shape=self.image_shape)
+        select_out = conv.conv2d(input=selectMatrix, filters = self.selectConv_W, filter_shape= selectConv_W_size, image_shape=selectConv_image_shape)
+        
+        #conv_out = conv_out_raw * select_out
+        #conv_out = conv_out_raw + select_out
         if self.non_linear=="tanh":
             conv_out_tanh = T.tanh(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
             self.output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
@@ -399,12 +410,20 @@ class LeNetConvPoolLayer(object):
             self.output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
         self.params = [self.W, self.b]
 
-    def predict(self, new_data, batch_size):
+    def predict(self, new_data, test_selectMatrix, batch_size):
         """
         predict for new data
         """
         img_shape = (batch_size, 1, self.image_shape[2], self.image_shape[3])
+        
+        selectMatrix= T.cast(test_selectMatrix,dtype=theano.config.floatX)
+        selectConv_W_size = self.filter_shape
+        selectConv_image_shape = img_shape
+
         conv_out = conv.conv2d(input=new_data, filters=self.W, filter_shape=self.filter_shape, image_shape=img_shape)
+        select_out = conv.conv2d(input=selectMatrix, filters = self.selectConv_W, filter_shape= selectConv_W_size, image_shape=selectConv_image_shape)
+        #conv_out = conv_out_raw * select_out
+
         if self.non_linear=="tanh":
             conv_out_tanh = T.tanh(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
             output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)

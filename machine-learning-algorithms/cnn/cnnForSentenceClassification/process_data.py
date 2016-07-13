@@ -126,6 +126,15 @@ def load_bin_vec(fname, vocab):
                 f.read(binary_len)
     return word_vecs
 
+def generate_simple_dict(word_vecs, filename):
+    with open(filename, 'w') as f:
+        for word in word_vecs:
+            vectorStr = ""
+            for elem in word_vecs[word]:
+                vectorStr += str(elem) + " "
+            line = (word + " " + vectorStr).strip()
+            f.write(line + "\n")
+
 def load_vec(fname, vocab):
     """
     format: word vec[50]
@@ -204,7 +213,7 @@ if __name__=="__main__":
     wordVectorFile = inputInfo["WordVector"]
     outputPath = inputInfo["OutPutPath"]
     mrPath = inputInfo["mrPath"]
-    k = 50
+    k = 200
     featureWordList = []
 
     w2v_file = wordVectorFile
@@ -222,6 +231,7 @@ if __name__=="__main__":
     print "word2vec loaded!"
     print "num words already in word2vec: " + str(len(w2v))
     add_unknown_words(w2v, vocab, k = k)
+    #generate_simple_dict(w2v, wordVectorFile + ".simple")
     W, featureWordMap, word_idx_map = get_W(w2v, featureWordList, k)
     rand_vecs = {}
     add_unknown_words(rand_vecs, vocab, k = k)
