@@ -82,6 +82,7 @@ def train_conv_net(datasets,
     sqr_norm_lim = s^2 in the paper
     lr_decay = adadelta decay parameter
     """
+    print(datasets[0].shape)#############
     print(featureWordMap.shape)###########
     print(U.shape)##########
     rng = np.random.RandomState(3435)
@@ -125,8 +126,22 @@ def train_conv_net(datasets,
         layer1_input = conv_layer.output.flatten(2)
         conv_layers.append(conv_layer)
         layer1_inputs.append(layer1_input)
+
+    x_reverse = x[::, ::-1]
+    reverse_layer0_input = Words[T.cast(x_reverse.flatten(),dtype="int32")].reshape((x_reverse.shape[0],1,x_reverse.shape[1],Words.shape[1]))
+    reverse_selectMatrix = wordMap[T.cast(x_reverse.flatten(),dtype="int32")].reshape((x_reverse.shape[0],1,x_reverse.shape[1], wordMap.shape[1]))
+
+    for i in xrange(len(filter_hs)):
+        filter_shape = filter_shapes[i]
+        pool_size = pool_sizes[i]
+        #w = InitializeWeights(layer0_input, selectMatrix, filter_shape, batch_size, pool_size)
+        conv_layer = LeNetConvPoolLayer(rng, reverse_selectMatrix, top_k = top_k, input=reverse_layer0_input,image_shape=(batch_size, 1, img_h, img_w),
+                                filter_shape=filter_shape, poolsize=pool_size, non_linear=conv_non_linear)
+        layer1_input = conv_layer.output.flatten(2)
+        conv_layers.append(conv_layer)
+        layer1_inputs.append(layer1_input)
     layer1_input = T.concatenate(layer1_inputs,1)
-    hidden_units[0] = feature_maps*len(filter_hs) * top_k
+    hidden_units[0] = feature_maps*len(filter_hs) * top_k * 2
     classifier = MLPDropout(rng, input=layer1_input, layer_sizes=hidden_units, activations=activations, dropout_rates=dropout_rate)
 
     #define parameters of the model and update functions using adadelta
@@ -182,9 +197,23 @@ def train_conv_net(datasets,
     test_size = test_set_x.shape[0]
     test_layer0_input = Words[T.cast(x.flatten(),dtype="int32")].reshape((test_size,1,img_h,Words.shape[1]))
     test_selectMatrix = wordMap[T.cast(x.flatten(),dtype="int32")].reshape((test_size,1,img_h, wordMap.shape[1]))
-    for conv_layer in conv_layers:
+
+    for i in range(len(conv_layers) / 2):
+        conv_layer = conv_layers[i]
         test_layer0_output = conv_layer.predict(test_layer0_input,test_selectMatrix, test_size)
         test_pred_layers.append(test_layer0_output.flatten(2))
+    
+    test_x_reverse = x[::, ::-1]
+    reverse_test_layer0_input = Words[T.cast(test_x_reverse.flatten(),dtype="int32")].reshape((test_size,1,img_h,Words.shape[1]))
+    reverse_test_selectMatrix = wordMap[T.cast(test_x_reverse.flatten(),dtype="int32")].reshape((test_size,1,img_h, wordMap.shape[1]))
+
+    i = len(conv_layers) / 2
+    while i < len(conv_layers):
+        conv_layer = conv_layers[i]
+        test_layer0_output = conv_layer.predict(reverse_test_layer0_input,reverse_test_selectMatrix, test_size)
+        test_pred_layers.append(test_layer0_output.flatten(2))
+        i+=1
+
     test_layer1_input = T.concatenate(test_pred_layers, 1)
     test_y_pred = classifier.predict(test_layer1_input)
     test_y_pred_p = classifier.predict_p(test_layer1_input)
@@ -341,7 +370,7 @@ if __name__=="__main__":
     if not os.path.exists(outputPath):
         os.makedirs(outputPath);
     mrPath = inputInfo["mrPath"]
-    k = 200
+    k = 50
 
     print "loading data...",
     x = cPickle.load(open(mrPath,"rb"))
