@@ -1,6 +1,7 @@
 # /usr/bin/python2.7
 import numpy
 import math
+import os
 def getMaxMinOffset(offsetFileName):
     maxOffset = 0
     minOffset = 0
@@ -40,6 +41,9 @@ def generateOffsetVector(wordVectorFile, offsetName, contextName, vectorLength):
             newsent = ""
             sent = context.readline().strip()
             words = sent.split(" ")
+            # print(line)
+            # print(sent)
+            # print("################################")
             i = 0
             for offset in line.strip().split(" "):
                 wordStr = words[i] + offset
@@ -58,13 +62,29 @@ def generateOffsetVector(wordVectorFile, offsetName, contextName, vectorLength):
         newVectorFile.write(word + " " + word_dict_withOffset[word] + "\n")
     newVectorFile.close()
 
+def mergeVector(vectorFileA, vectorFileB):
+    word_dict = {}
+    newVectorFile = "total.vector"
+    with open(vectorFileA, "r") as f:
+        for line in f:
+            strs =line.strip().split(' ')
+            word_dict[str.lower(strs[0])] = line[len(strs[0]) + 1:].strip()
+    with open(vectorFileB, 'r') as f:
+        for line in f:
+            strs =line.strip().split(' ')
+            word_dict[str.lower(strs[0])] = line[len(strs[0]) + 1:].strip()
+    with open(newVectorFile, "w") as f:
+        for word in word_dict:
+            f.write(word + " " + word_dict[word] + "\n")
+    return newVectorFile
 
 if __name__ == "__main__":
-    traiContext = "/home/laboratory/corpusYang/Ltrainword.context"
-    testContext = "/home/laboratory/corpusYang/Ltestword.context"
+    rootpath = "/home/laboratory/corpusYang/"
+    traiContext = "/home/laboratory/corpusYang/train_word.cnn"
+    testContext = "/home/laboratory/corpusYang/test_word.cnn"
 
     testOffset = "/home/laboratory/corpusYang/numberTestfile"
-    traiOffset = "/home/laboratory/corpusYang/numberfile"
+    traiOffset = "/home/laboratory/corpusYang/numberTrainfile"
     wordVectorFile = "/home/laboratory/corpusYang/finalWordEmbeddings_50dim.txt"
 
     #generateOffsetVector(wordVectorFile, traiOffset, traiContext, 5)
@@ -74,3 +94,4 @@ if __name__ == "__main__":
 
     # max, min = getMaxMinOffset(traiOffset)
     # generateOffsetVector(traiOffset + ".vector", min,max ,5)
+    mergeVector(rootpath + "finalWordEmbeddings_50dim.txt.extent", rootpath + "finalWordEmbeddings_50dim.txt.extent.train")
