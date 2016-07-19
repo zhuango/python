@@ -1,10 +1,17 @@
 {
     "FeatureWord": "/home/laboratory/corpusYang/featureWrods/feature.word",
-    "TraiContext": "/home/laboratory/corpusYang/Ltrainword.context",
+    
+    "TraiContext": "/home/laboratory/corpusYang/Ltrainword.context.withOffset",
     "TraiLabel": "/home/laboratory/corpusYang/Ltrainlabel.txt",
-    "TestContext": "/home/laboratory/corpusYang/Ltestword.context",
+    "TraiOffset": "/home/laboratory/corpusYang/numberfile",
+
+    "TestContext": "/home/laboratory/corpusYang/Ltestword.context.withOffset",
     "TestLabel": "/home/laboratory/corpusYang/Ltestlabel.txt",
-    "WordVector": "/home/laboratory/corpusYang/glove.6B.200d_word2vec.txt.simple",
-    "mrPath":"/home/laboratory/corpusYang/mr.p",
-    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/newdata_200/"
+    "TestOffset": "/home/laboratory/corpusYang/numberTestfile",
+    
+    "WordVector": "/home/laboratory/corpusYang/finalWordEmbeddings_50dim.txt.extent",
+    "OffsetVector": "/home/laboratory/corpusYang/numberfile.vector",
+
+    "mrPath":"/home/laboratory/corpusYang/mr.p_50",
+    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/newdata_50_withHead_100MLP/"
 }
