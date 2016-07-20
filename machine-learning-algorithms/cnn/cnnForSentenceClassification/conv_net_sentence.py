@@ -335,7 +335,7 @@ if __name__=="__main__":
     cnnJson.close()
 
     wordVectorFile = inputInfo["WordVector"]
-    outputPath = inputInfo["OutPutPath"]
+    outputPathRoot = inputInfo["OutPutPath"]
     mrPath = inputInfo["mrPath"]
     k = int(inputInfo["WordVectorSize"])
 
@@ -364,7 +364,7 @@ if __name__=="__main__":
     datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=101,k=k, filter_h=5)
     top_ks = [1, 2, 3]#1, 2, 3
     for top_k in top_ks:
-        outputPath += "_"+str(top_k)
+        outputPath = outputPathRoot + "_"+str(top_k)
         if not os.path.exists(outputPath):
             os.makedirs(outputPath);
         perf = train_conv_net(datasets,
