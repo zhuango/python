@@ -1,17 +1,18 @@
 {
-    "FeatureWord": "/home/laboratory/corpusYang/featureWrods/feature.word",
+    "WordVectorSize": "400",
+    "FeatureWord": "/home/laboratory/corpusYang/FeatureWord.dict",
     
-    "TraiContext": "/home/laboratory/corpusYang/Ltrainword.context.withOffset",
-    "TraiLabel": "/home/laboratory/corpusYang/Ltrainlabel.txt",
+    "TraiContext": "/home/laboratory/corpusYang/train.context",
+    "TraiLabel": "/home/laboratory/corpusYang/train.label",
     "TraiOffset": "/home/laboratory/corpusYang/numberfile",
 
-    "TestContext": "/home/laboratory/corpusYang/Ltestword.context.withOffset",
-    "TestLabel": "/home/laboratory/corpusYang/Ltestlabel.txt",
+    "TestContext": "/home/laboratory/corpusYang/test.context",
+    "TestLabel": "/home/laboratory/corpusYang/test.label",
     "TestOffset": "/home/laboratory/corpusYang/numberTestfile",
     
-    "WordVector": "/home/laboratory/corpusYang/finalWordEmbeddings_50dim.txt.extent",
+    "WordVector": "/home/laboratory/corpusYang/newWordVector/wordVector_cskipgrom_200.bin.simple",
     "OffsetVector": "/home/laboratory/corpusYang/numberfile.vector",
 
-    "mrPath":"/home/laboratory/corpusYang/mr.p_50",
-    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/newdata_50_withHead_100MLP/"
+    "mrPath": "/home/laboratory/corpusYang/mr.p_470",
+    "OutPutPath": "/home/laboratory/corpusYang/cnnOutPut/470_100_50_2_top3/"
 }

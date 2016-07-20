@@ -213,7 +213,7 @@ if __name__=="__main__":
     wordVectorFile = inputInfo["WordVector"]
     outputPath = inputInfo["OutPutPath"]
     mrPath = inputInfo["mrPath"]
-    k = 200
+    k = int(inputInfo["WordVectorSize"])
     featureWordList = []
 
     w2v_file = wordVectorFile

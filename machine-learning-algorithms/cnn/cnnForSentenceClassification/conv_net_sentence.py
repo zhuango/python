@@ -223,10 +223,8 @@ def train_conv_net(datasets,
         print("test perf: %.2f" %(test_perf * 100.));
         if val_perf >= best_val_perf:
             best_val_perf = val_perf
-            test_loss = test_model_all(test_set_x,test_set_y)
-            test_perf = 1- test_loss
             np.savetxt(outputPath + "/pred_best.txt", pred, fmt='%.5f', delimiter=' ');
-        np.savetxt(outputPath + "/pred_" + str(epoch) + ".txt", pred, fmt='%.5f', delimiter=' ');
+        np.savetxt(outputPath + "/pred_" + str(epoch) + "_" + str(test_perf * 100.) + ".txt", pred, fmt='%.5f', delimiter=' ');
     return test_perf
 
 def shared_dataset(data_xy, borrow=True):
@@ -338,10 +336,8 @@ if __name__=="__main__":
 
     wordVectorFile = inputInfo["WordVector"]
     outputPath = inputInfo["OutPutPath"]
-    if not os.path.exists(outputPath):
-        os.makedirs(outputPath);
     mrPath = inputInfo["mrPath"]
-    k = 60
+    k = int(inputInfo["WordVectorSize"])
 
     print "loading data...",
     x = cPickle.load(open(mrPath,"rb"))
@@ -364,13 +360,17 @@ if __name__=="__main__":
         U = W
     results = []
     r = range(0,10)
-    TestTag = 1
-    for i in [TestTag]:
-        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=101,k=k, filter_h=5)
+    
+    datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=101,k=k, filter_h=5)
+    top_ks = [1, 2, 3]#1, 2, 3
+    for top_k in top_ks:
+        outputPath += "_"+str(top_k)
+        if not os.path.exists(outputPath):
+            os.makedirs(outputPath);
         perf = train_conv_net(datasets,
                               U,
                               featureWordMap,
-                              top_k = 3,
+                              top_k = top_k,
                               img_w=k,
                               lr_decay=0.95,
                               filter_hs=[3,4,5],
@@ -383,6 +383,4 @@ if __name__=="__main__":
                               batch_size=50,
                               dropout_rate=[0.5],
                               outputPath = outputPath)
-        print "cv: " + str(i) + ", perf: " + str(perf)
-        results.append(perf)
     print str(np.mean(results))
