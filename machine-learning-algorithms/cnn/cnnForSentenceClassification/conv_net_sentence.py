@@ -224,7 +224,7 @@ def train_conv_net(datasets,
         if val_perf >= best_val_perf:
             best_val_perf = val_perf
             np.savetxt(outputPath + "/pred_best.txt", pred, fmt='%.5f', delimiter=' ');
-        np.savetxt(outputPath + "/pred_" + str(epoch) + "_" + str(test_perf * 100.) + ".txt", pred, fmt='%.5f', delimiter=' ');
+        np.savetxt(outputPath + "/pred_" + str(epoch) + ".txt", pred, fmt='%.5f', delimiter=' ');
     return test_perf
 
 def shared_dataset(data_xy, borrow=True):
@@ -329,6 +329,23 @@ def make_idx_data_cv(revs, word_idx_map, cv, max_l=51, k=300, filter_h=5):
 
 import json
 import os
+from multiprocessing import Process
+import subprocess
+import re
+def findProcess( processId ):
+    #ps= subprocess.Popen("ps -ef | grep "+processId, shell=True, stdout=subprocess.PIPE)
+    ps= subprocess.Popen(r'tasklist.exe /NH /FI "PID eq %d"' % processId, shell=True, stdout=subprocess.PIPE)
+    output = ps.stdout.read()
+    ps.stdout.close()
+    ps.wait()
+    return output
+def isProcessRunning( processId):
+    output = findProcess( processId )
+    if re.search(str(processId), output) is None:
+        return False
+    else:
+        return True
+
 if __name__=="__main__":
     cnnJson = open("process_data.json", "r")
     inputInfo = json.load(cnnJson)
@@ -361,7 +378,15 @@ if __name__=="__main__":
     results = []
     r = range(0,10)
     
-    datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=101,k=k, filter_h=5)
+
+    datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=68,k=k, filter_h=5)
+    
+    print(os.getpid())
+    pid =6884
+    while(isProcessRunning(pid)):
+        print(str(pid) + " is running.\n")
+        time.sleep(2 * 60)
+
     top_ks = [1, 2, 3]#1, 2, 3
     for top_k in top_ks:
         outputPath = outputPathRoot + "_"+str(top_k)
