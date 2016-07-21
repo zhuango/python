@@ -216,6 +216,8 @@ if __name__=="__main__":
     k = int(inputInfo["WordVectorSize"])
     featureWordList = []
 
+    print(TraiContextFile)
+
     w2v_file = wordVectorFile
     data_folder = [TraiContextFile, TraiLabelFile, TestContextFile, TestLabelFile]
     print "loading data...",
