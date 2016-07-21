@@ -27,9 +27,10 @@ def generateOffsetVector(offsetVectorFileName, minOffset, maxOffset, vectorLengt
                 vectorStr += str(value) + " "
             f.write(str(a) + " " + vectorStr.strip() + "\n")
             a += 1
-def generateOffsetVector(wordVectorFile, offsetName, contextName, vectorLength):
+def generateOffsetVector(wordVectorFile, offsetName, contextName, wordVectorLength, vectorLength, preffix):
     word_dict={}
     word_dict_withOffset = {}
+    offset_dict = {}
     with open(wordVectorFile, "r") as f:
         for line in f:
             strs =line.strip().split(' ')
@@ -48,19 +49,31 @@ def generateOffsetVector(wordVectorFile, offsetName, contextName, vectorLength):
             for offset in line.strip().split(" "):
                 wordStr = words[i] + offset
                 newsent += wordStr + " "
-                vectorStr = word_dict[words[i]]
-                for value in numpy.random.uniform(-0.25,0.25,vectorLength * 2):
-                    vectorStr += " " + str(value) 
+                vectorStr = ""
+                if words[i] not in word_dict:
+                    for value in numpy.random.uniform(-0.25, 0.25, wordVectorLength):
+                        vectorStr += str(value) + " "
+                    vectorStr = vectorStr.strip()
+                else:
+                    vectorStr = word_dict[words[i]]
+                if offset not in offset_dict:
+                    offsetvectorStr = ""
+                    for value in numpy.random.uniform(-0.25,0.25,vectorLength * 2):
+                         offsetvectorStr += str(value) + " "
+                    offset_dict[offset] = offsetvectorStr.strip()
+                vectorStr += " " + offset_dict[offset]
                 word_dict_withOffset[wordStr] = vectorStr
                 i+=1
         
             newcontext.write(newsent.strip() + "\n")
         context.close()
     
-    newVectorFile = open(wordVectorFile + ".extent", "w")
+    newVectorFileName = wordVectorFile + preffix+".extent";
+    newVectorFile = open(newVectorFileName, "w")
     for word in word_dict_withOffset:
         newVectorFile.write(word + " " + word_dict_withOffset[word] + "\n")
     newVectorFile.close()
+    return newVectorFileName
 
 def mergeVector(vectorFileA, vectorFileB):
     word_dict = {}
@@ -87,11 +100,11 @@ if __name__ == "__main__":
     traiOffset = "/home/laboratory/corpusYang/numberTrainfile"
     wordVectorFile = "/home/laboratory/corpusYang/finalWordEmbeddings_50dim.txt"
 
-    #generateOffsetVector(wordVectorFile, traiOffset, traiContext, 5)
-    #generateOffsetVector(wordVectorFile, testOffset, testContext, 5)
+    newVectorFileNametrain = generateOffsetVector(wordVectorFile, traiOffset, traiContext, 10, "train")
+    newVectorFileNametest = generateOffsetVector(wordVectorFile, testOffset, testContext, 10, "test")
     # max, min = getMaxMinOffset(testOffset)
     # generateOffsetVector(testOffset + ".vector", min,max ,5)
 
     # max, min = getMaxMinOffset(traiOffset)
     # generateOffsetVector(traiOffset + ".vector", min,max ,5)
-    mergeVector(rootpath + "finalWordEmbeddings_50dim.txt.extent", rootpath + "finalWordEmbeddings_50dim.txt.extent.train")
+    mergeVector("embedding100.vectest.extent", "embedding100.vectrain.extent")
