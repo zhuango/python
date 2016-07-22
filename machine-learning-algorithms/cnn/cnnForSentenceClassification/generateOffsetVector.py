@@ -84,9 +84,9 @@ def generateOffsetVector(word_dict, offset_dict, offsetName, contextName, wordVe
     newVectorFile.close()
     return newVectorFileName
 
-def mergeVector(vectorFileA, vectorFileB, suffix):
+def mergeVector(vectorFileA, vectorFileB, preffix):
     word_dict = {}
-    newVectorFile = "total.vector" + suffix
+    newVectorFile = preffix + ".vector"
     with open(vectorFileA, "r") as f:
         for line in f:
             strs =line.strip().split(' ')
@@ -101,21 +101,27 @@ def mergeVector(vectorFileA, vectorFileB, suffix):
     return newVectorFile
 
 if __name__ == "__main__":
-    rootpath = "/home/laboratory/corpusYang/"
-    traiContext = "/home/laboratory/corpusYang/train_word.cnn"
-    testContext = "/home/laboratory/corpusYang/test_word.cnn"
+    rootpath = "G:/liuzhuang/corpusYang/"
+    traiContext = "G:/liuzhuang/corpusYang/Word_Seq_win3/train_word.cnn"
+    testContext = "G:/liuzhuang/corpusYang/Word_Seq_win3/test_word.cnn"
 
-    testOffset = "/home/laboratory/corpusYang/numberTestfile"
-    traiOffset = "/home/laboratory/corpusYang/numberTrainfile"
-    wordVectorFile = "/home/laboratory/corpusYang/finalWordEmbeddings_50dim.txt"
+    testOffset = "G:/liuzhuang/corpusYang/Word_Seq_win3/numberTestfile"
+    traiOffset = "G:/liuzhuang/corpusYang/Word_Seq_win3/numberTrainfile"
+    wordVectorFile = "G:/liuzhuang/corpusYang/embedding100.vec"
 
+    print("Get max and min position...")
     maxtest, mintest = getMaxMinOffset(testOffset)
     maxtrai, mintrai = getMaxMinOffset(traiOffset)
     max , min = max([maxtest, maxtrai]), min([mintest, mintrai])
-
     word_dict = generateWordVectorDict(wordVectorFile)
-    offset_dict = generateOffsetVectorDict(min, max, 35)
-    newVectorFileNametrain = generateOffsetVector(word_dict, offset_dict, traiOffset, traiContext,400, 35, "train")
-    newVectorFileNametest = generateOffsetVector(word_dict, offset_dict, testOffset, testContext, 400, 35, "test")
 
-    mergeVector(newVectorFileNametrain, newVectorFileNametest, "_470")
+    offfsetVectorLengths = [25, 30, 35, 40]
+    wordVectorLength = 100
+    for offfsetVectorLength in offfsetVectorLengths:
+        print("generate word dict and offset dict...")
+        offset_dict = generateOffsetVectorDict(min, max, offfsetVectorLength)
+
+        print("generate word + offset vector...")
+        newVectorFileNametrain = generateOffsetVector(word_dict, offset_dict, traiOffset, traiContext,wordVectorLength, offfsetVectorLength, "train")
+        newVectorFileNametest = generateOffsetVector(word_dict, offset_dict, testOffset, testContext, wordVectorLength, offfsetVectorLength, "test")
+        mergeVector(newVectorFileNametrain, newVectorFileNametest, "Word_Seq_win3_offset_" + str(wordVectorLength + offfsetVectorLength * 2))

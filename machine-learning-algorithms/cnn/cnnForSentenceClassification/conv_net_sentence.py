@@ -355,7 +355,7 @@ if __name__=="__main__":
     outputPathRoot = inputInfo["OutPutPath"]
     mrPath = inputInfo["mrPath"]
     k = int(inputInfo["WordVectorSize"])
-
+    max_l = int(inputInfo["maxLength"])
     print "loading data...",
     x = cPickle.load(open(mrPath,"rb"))
     revs, W, W2, featureWordMap, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4], x[5]
@@ -379,7 +379,7 @@ if __name__=="__main__":
     r = range(0,10)
     
 
-    datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=68,k=k, filter_h=5)
+    datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=max_l,k=k, filter_h=5)
     
     print(os.getpid())
     pid =6884
