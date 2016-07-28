@@ -1,3 +1,4 @@
+import numpy
 def mergeVector(vectorFileA, vectorFileB):
     word_dict = {}
     newVectorFile = vectorFileA + "_" + vectorFileB
@@ -13,7 +14,7 @@ def mergeVector(vectorFileA, vectorFileB):
         for word in word_dict:
             f.write(word + " " + word_dict[word] + "\n")
     return newVectorFile
-def generatePosVector(wordVectorFile, posVectorFile, offsetName, contextName):
+def generatePosVector(wordVectorFile, posVectorFile, offsetName, contextName, wordVectorLength):
     word_dict={}
     pos_dict = {}
     word_dict_withOffset = {}
@@ -37,6 +38,11 @@ def generatePosVector(wordVectorFile, posVectorFile, offsetName, contextName):
             for offset in line.strip().split(" "):
                 wordStr = words[i] + "_" +offset
                 newsent += wordStr + " "
+                if words[i] not in word_dict:
+                    wordvectorStr = ""                
+                    for value in numpy.random.uniform(-0.25, 0.25, wordVectorLength):
+                        wordvectorStr += str(value) + " "
+                    word_dict[words[i]] = wordvectorStr.strip()
                 vectorStr = word_dict[words[i]] + " " + pos_dict[offset]
                 word_dict_withOffset[wordStr] = vectorStr
                 i+=1
@@ -59,6 +65,7 @@ if __name__ == "__main__":
     testContextfile = "wordseq/test_word.cnn"
     traiContextfile = "wordseq/train_word.cnn"
 
-    #generatePosVector(wordVectorFile, posVectorFile, testposfile, testContextfile)
-    #generatePosVector(wordVectorFile, posVectorFile, traiposfile, traiContextfile)
-    mergeVector(mergeVector("totalA.vector", "totalB.vector"), "totalC.vector")
+    #generatePosVector(wordVectorFile, posVectorFile, testposfile, testContextfile, 100)
+    #generatePosVector(wordVectorFile, posVectorFile, traiposfile, traiContextfile, 100)
+    #mergeVector("test_word.cnn.vector", "train_word.cnn.vector")
+    mergeVector(mergeVector("a.vector", "b.vector"), "c.vector")
