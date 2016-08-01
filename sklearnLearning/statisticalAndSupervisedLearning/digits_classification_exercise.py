@@ -24,11 +24,26 @@ for label in labels:
 results = []
 for lr in lrs:
     results.append(lr.predict(X_test))
-print(results)
+resultMatrix = numpy.array(results)
+print(resultMatrix.shape)
+finalResult = numpy.argmax(resultMatrix, axis=0)
+print("logistic regression: ")
+print(numpy.mean(numpy.array(finalResult==y_test, dtype=int)))
+
+
+
 
 kn = neighbors.KNeighborsClassifier(n_neighbors=len(labels))
 kn.fit(X_train, y_train)
 result = kn.predict(X_test)
-print(result)
-
+print("k neighbors: ")
+print(numpy.mean(numpy.array(result==y_test, dtype=int)))
 print(y_test)
+
+
+knn = neighbors.KNeighborsClassifier()
+logistic = linear_model.LogisticRegression()
+
+print('KNN score: %f' % knn.fit(X_train, y_train).score(X_test, y_test))
+print('LogisticRegression score: %f'
+      % logistic.fit(X_train, y_train).score(X_test, y_test))

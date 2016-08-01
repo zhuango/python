@@ -1,3 +1,6 @@
+test
+train
+.txt
 *.py[cod]
 
 # C extensions
