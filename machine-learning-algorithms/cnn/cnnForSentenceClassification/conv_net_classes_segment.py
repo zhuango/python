@@ -340,7 +340,7 @@ class LogisticRegression(object):
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, selectMatrix, top_k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
+    def __init__(self, rng, posInfo, top_k, input, filter_shape, image_shape, poolsize=(2, 2), non_linear="tanh"):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -369,6 +369,7 @@ class LeNetConvPoolLayer(object):
         self.poolsize = poolsize
         self.non_linear = non_linear
         self.top_k = top_k
+        self.featureSpliter = posInfo[::, ::, 2:] - filter_shape[2]
         # there are "num input feature maps * filter height * filter width"
         # inputs to each hidden unit
         fan_in = numpy.prod(filter_shape[1:])
@@ -389,49 +390,36 @@ class LeNetConvPoolLayer(object):
         self.b = theano.shared(value=b_values, borrow=True, name="b_conv")
 
         # convolve input feature maps with filters
-        selectMatrix= T.cast(selectMatrix,dtype=theano.config.floatX)
-        selectConv_W_size = filter_shape
-        selectConv_image_shape = self.image_shape#(self.image_shape[0], self.image_shape[1], self.image_shape[2], 1)
-        self.selectConv_W = theano.shared(numpy.asarray(rng.uniform(low=0, high=0.2, size=filter_shape),
-                dtype=theano.config.floatX),borrow=True,name="W_conv")
         conv_out = conv.conv2d(input=input, filters=self.W,filter_shape=self.filter_shape, image_shape=self.image_shape)
-        select_out = conv.conv2d(input=selectMatrix, filters = self.selectConv_W, filter_shape= selectConv_W_size, image_shape=selectConv_image_shape)
-        
-        #conv_out = conv_out_raw * select_out
-        #conv_out = conv_out_raw + select_out
+
         if self.non_linear=="tanh":
             conv_out_tanh = T.tanh(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
             self.output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
-        elif self.non_linear=="relu":  
+        elif self.non_linear=="relu":
             conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
-            #output = self.k_max_pool(conv_out_tanh, self.top_k)
-            self.output = self.segment_max_pool(conv_out_tanh)
+            #self.output = self.k_max_pool(conv_out_tanh, self.top_k)
+            self.output = self.dynamic_max_pool(conv_out_tanh, self.image_shape[0], self.featureSpliter)
         else:
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
             self.output = pooled_out + self.b.dimshuffle('x', 0, 'x', 'x')
         self.params = [self.W, self.b]
 
-    def predict(self, new_data, test_selectMatrix, batch_size):
+    def predict(self, new_data, test_posInfo, batch_size):
         """
         predict for new data
         """
         img_shape = (batch_size, 1, self.image_shape[2], self.image_shape[3])
-        
-        selectMatrix= T.cast(test_selectMatrix,dtype=theano.config.floatX)
-        selectConv_W_size = self.filter_shape
-        selectConv_image_shape = img_shape
 
+        featureSpliter = test_posInfo[::, ::, 2:] - self.filter_shape[2]
         conv_out = conv.conv2d(input=new_data, filters=self.W, filter_shape=self.filter_shape, image_shape=img_shape)
-        select_out = conv.conv2d(input=selectMatrix, filters = self.selectConv_W, filter_shape= selectConv_W_size, image_shape=selectConv_image_shape)
-        #conv_out = conv_out_raw * select_out
 
         if self.non_linear=="tanh":
             conv_out_tanh = T.tanh(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
             output = downsample.max_pool_2d(input=conv_out_tanh, ds=self.poolsize, ignore_border=True)
-        if self.non_linear=="relu": 
-            conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))      
+        if self.non_linear=="relu":
+            conv_out_tanh = ReLU(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
             #output = self.k_max_pool(conv_out_tanh, self.top_k)
-            output = self.segment_max_pool(conv_out_tanh)
+            output = self.dynamic_max_pool(conv_out_tanh, batch_size, featureSpliter)
 
         else:
             pooled_out = downsample.max_pool_2d(input=conv_out, ds=self.poolsize, ignore_border=True)
@@ -449,34 +437,51 @@ class LeNetConvPoolLayer(object):
         outputs.append(pooled_out)
         output = T.concatenate(outputs, 2)
         return output
-    def dynamic_max_pool(self, x, split):
-        k_max_pool(x[::, ::, 0:5], 1)
+
+    def dynamic_max_pool(self, x, batch_size, split):
+        outputs = []
+        for i in range(batch_size):
+            e1pos = split[i, 0, 0, 1]
+            e2pos = split[i, 0, 0, 2]
+            p1 = x[i, :, :e1pos, :]
+            p2 = x[i, :, e1pos:e2pos, :]
+            p3 = x[i, :, e2pos:, :]
+            p1_pool_out = T.max(p1, axis=1)
+            p2_pool_out = T.max(p2, axis=1)
+            p3_pool_out = T.max(p3, axis=1)
+            temp = T.concatenate([p1_pool_out, p2_pool_out, p3_pool_out], axis=1)
+            outputs.append(temp)
+
+        output = T.concatenate(outputs, axis=0)
+        output = T.reshape(output, (batch_size, self.filter_shape[0], 3, 1))
+        return output
+
     def k_max_pool(self, x, k):
         """
         perform k-max pool on the input along the rows
 
         input: theano.tensor.tensor4
-           
+
         k: theano.tensor.iscalar
             the k parameter
 
-        Returns: 
+        Returns:
         4D tensor
         """
         x = T.reshape(x, (x.shape[0], x.shape[1], 1, x.shape[2] * x.shape[3]))
         ind = T.argsort(x, axis = 3)
 
         sorted_ind = T.sort(ind[:,:,:, -k:], axis = 3)
-        
+
         dim0, dim1, dim2, dim3 = sorted_ind.shape
-        
+
         indices_dim0 = T.arange(dim0).repeat(dim1 * dim2 * dim3)
         indices_dim1 = T.arange(dim1).repeat(dim2 * dim3).reshape((dim1*dim2*dim3, 1)).repeat(dim0, axis=1).T.flatten()
         indices_dim2 = T.arange(dim2).repeat(dim3).reshape((dim2*dim3, 1)).repeat(dim0 * dim1, axis = 1).T.flatten()
-        
+
         result = x[indices_dim0, indices_dim1, indices_dim2, sorted_ind.flatten()].reshape(sorted_ind.shape)
         shape = (result.shape[0],result.shape[1], result.shape[2] * result.shape[3], 1)
 
         result = T.reshape(result, shape)
-                
+
         return result

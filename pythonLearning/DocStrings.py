@@ -33,3 +33,14 @@ print 'The code run for %d epochs, with %f sec/epochs' % (
     (eidx + 1), (23 - 1) / (1. * (eidx + 1))), diffStr
 fint = float('inf')
 print(fint)
+
+def test(l):
+    l[0] = 1000
+ls = [[10,20, 30], [40, 50,60]]
+first = list(ls[0])
+test(first)
+print(ls)
+
+for i in range(10): 
+    print(i)
+    print(i)

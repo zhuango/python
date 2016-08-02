@@ -114,13 +114,17 @@ def train_conv_net(datasets,
     set_zero = theano.function([zero_vec_tensor], updates=[(Words, T.set_subtensor(Words[0,:], zero_vec_tensor))], allow_input_downcast=True)
     layer0_input = Words[T.cast(x.flatten(),dtype="int32")].reshape((x.shape[0],1,x.shape[1],Words.shape[1]))
     selectMatrix = wordMap[T.cast(x.flatten(),dtype="int32")].reshape((x.shape[0],1,x.shape[1], wordMap.shape[1]))
+    
+    train_spliter = theano.shared(value=datasets[2], name='train_spliter',allow_downcast=True)
+    test_spliter = theano.shared(value=datasets[3], name='test_spliter', allow_downcast=True)
+    
     conv_layers = []
     layer1_inputs = []
     for i in xrange(len(filter_hs)):
         filter_shape = filter_shapes[i]
         pool_size = pool_sizes[i]
         #w = InitializeWeights(layer0_input, selectMatrix, filter_shape, batch_size, pool_size)
-        conv_layer = LeNetConvPoolLayer(rng, selectMatrix, top_k = top_k, input=layer0_input,image_shape=(batch_size, 1, img_h, img_w),
+        conv_layer = LeNetConvPoolLayer(rng, train_spliter[index * batch_size: (index + 1) * batch_size].reshape((batch_size, 1, top_k -1, 1)), top_k = top_k, input=layer0_input,image_shape=(batch_size, 1, img_h, img_w),
                                 filter_shape=filter_shape, poolsize=pool_size, non_linear=conv_non_linear)
         layer1_input = conv_layer.output.flatten(2)
         conv_layers.append(conv_layer)
@@ -152,20 +156,21 @@ def train_conv_net(datasets,
         new_data = datasets[0]
     new_data = np.random.permutation(new_data)
     n_batches = new_data.shape[0]/batch_size
-    n_train_batches = int(np.round(n_batches*0.9))
+    #n_train_batches = int(np.round(n_batches*0.9))
+    n_train_batches = n_batches
     #divide train set into train/val sets
     test_set_x = datasets[1][:,:img_h]
     test_set_y = np.asarray(datasets[1][:,-1],"int32")
     train_set = new_data[:n_train_batches*batch_size,:]
-    val_set = new_data[n_train_batches*batch_size:,:]
+    #val_set = new_data[n_train_batches*batch_size:,:]
     train_set_x, train_set_y = shared_dataset((train_set[:,:img_h],train_set[:,-1]))
-    val_set_x, val_set_y = shared_dataset((val_set[:,:img_h],val_set[:,-1]))
-    n_val_batches = n_batches - n_train_batches
-    val_model = theano.function([index], classifier.errors(y),
-         givens={
-            x: val_set_x[index * batch_size: (index + 1) * batch_size],
-             y: val_set_y[index * batch_size: (index + 1) * batch_size]},
-                                allow_input_downcast=True)
+    #val_set_x, val_set_y = shared_dataset((val_set[:,:img_h],val_set[:,-1]))
+    #n_val_batches = n_batches - n_train_batches
+    # val_model = theano.function([index], classifier.errors(y),
+    #      givens={
+    #         x: val_set_x[index * batch_size: (index + 1) * batch_size],
+    #          y: val_set_y[index * batch_size: (index + 1) * batch_size]},
+    #                             allow_input_downcast=True)
 
     #compile theano functions to get train/val/test errors
     test_model = theano.function([index], classifier.errors(y),
@@ -183,7 +188,7 @@ def train_conv_net(datasets,
     test_layer0_input = Words[T.cast(x.flatten(),dtype="int32")].reshape((test_size,1,img_h,Words.shape[1]))
     test_selectMatrix = wordMap[T.cast(x.flatten(),dtype="int32")].reshape((test_size,1,img_h, wordMap.shape[1]))
     for conv_layer in conv_layers:
-        test_layer0_output = conv_layer.predict(test_layer0_input,test_selectMatrix, test_size)
+        test_layer0_output = conv_layer.predict(test_layer0_input,test_spliter[index * batch_size: (index + 1) * batch_size].reshape((batch_size, 1, top_k -1, 1)), test_size)
         test_pred_layers.append(test_layer0_output.flatten(2))
     test_layer1_input = T.concatenate(test_pred_layers, 1)
     test_y_pred = classifier.predict(test_layer1_input)
@@ -196,8 +201,8 @@ def train_conv_net(datasets,
     #start training over mini-batches
     print '... training'
     epoch = 0
-    best_val_perf = 0
-    val_perf = 0
+    best_test_perf = 0
+    # val_perf = 0
     test_perf = 0
     cost_epoch = 0
     while (epoch < n_epochs):
@@ -213,18 +218,16 @@ def train_conv_net(datasets,
                 set_zero(zero_vec)
         train_losses = [test_model(i) for i in xrange(n_train_batches)]
         train_perf = 1 - np.mean(train_losses)
-        val_losses = [val_model(i) for i in xrange(n_val_batches)]
-        val_perf = 1- np.mean(val_losses)
-        pred = test_y_pred_func(test_set_x)
-
-        print('epoch: %i, training time: %.2f secs, train perf: %.2f %%, val perf: %.2f %%' % (epoch, time.time()-start_time, train_perf * 100., val_perf*100.))
+        # val_losses = [val_model(i) for i in xrange(n_val_batches)]
+        # val_perf = 1- np.mean(val_losses)        
         test_loss = test_model_all(test_set_x,test_set_y)
         test_perf = 1- test_loss
-        print("test perf: %.2f" %(test_perf * 100.));
-        if val_perf >= best_val_perf:
-            best_val_perf = val_perf
-            test_loss = test_model_all(test_set_x,test_set_y)
-            test_perf = 1- test_loss
+        pred = test_y_pred_func(test_set_x)
+
+        print('epoch: %i, training time: %.2f secs, train perf: %.2f %%, test perf: %.2f %%' % (epoch, time.time()-start_time, train_perf * 100., test_perf*100.))
+
+        if test_perf >= best_test_perf:
+            best_test_perf = test_perf
             np.savetxt(outputPath + "/pred_best.txt", pred, fmt='%.5f', delimiter=' ');
         np.savetxt(outputPath + "/pred_" + str(epoch) + ".txt", pred, fmt='%.5f', delimiter=' ');
     return test_perf
@@ -297,14 +300,19 @@ def safe_update(dict_to, dict_from):
         dict_to[key] = val
     return dict_to
 
-def get_idx_from_sent(sent, word_idx_map, max_l=51, k=300, filter_h=5):
+def get_idx_from_sent(rev, word_idx_map, max_l=51, k=300, filter_h=5):
     """
     Transforms sentence into a list of indices. Pad with zeroes.
     """
+    sent = rev["text"]
     x = []
     pad = filter_h - 1
     for i in xrange(pad):
         x.append(0)
+    i = 1
+    while i < len(rev["featureSplit"]):
+        rev["featureSplit"][i] += pad
+        i+=1
     words = sent.split()
     for word in words:
         if word in word_idx_map:
@@ -313,51 +321,72 @@ def get_idx_from_sent(sent, word_idx_map, max_l=51, k=300, filter_h=5):
         x.append(0)
     return x
 
-def make_idx_data_cv(revs, word_idx_map, cv, max_l=51, k=300, filter_h=5):
+def make_idx_data_cv(revs, word_idx_map, cv, max_l=101, k=300, filter_h=5):
     """
     Transforms sentences into a 2-d matrix.
     """
     train, test = [], []
+    trainFeatureSplit, testFeatureSplit = [], []
     for rev in revs:
-        sent = get_idx_from_sent(rev["text"], word_idx_map, max_l, k, filter_h)
+        sent = get_idx_from_sent(rev, word_idx_map, max_l, k, filter_h)
         sent.append(rev["y"])
+        print(rev["featureSplit"])
+       
         if rev["split"]==cv:
             test.append(sent)
+            testFeatureSplit.append(rev["featureSplit"])
         else:
             train.append(sent)
+            trainFeatureSplit.append(rev["featureSplit"])
     train = np.array(train,dtype="int")
     test = np.array(test,dtype="int")
-    return [train, test]
+
+    trainFeatureSplit = np.array(trainFeatureSplit, dtype='int')
+    testFeatureSplit = np.array(trainFeatureSplit, dtype='int')
+
+    return [train, test, trainFeatureSplit, testFeatureSplit]
 
 import json
 import os
+from multiprocessing import Process
+import subprocess
+import re
+def findProcess( processId ):
+    ps= subprocess.Popen("ps -ef | grep "+ str(processId), shell=True, stdout=subprocess.PIPE)
+    #ps= subprocess.Popen(r'tasklist.exe /NH /FI "PID eq %d"' % processId, shell=True, stdout=subprocess.PIPE)
+    output = ps.stdout.read()
+    ps.stdout.close()
+    ps.wait()
+    return output
+def isProcessRunning( processId):
+    output = findProcess( processId )
+    if re.search(str(processId), output) is None:
+        return False
+    else:
+        return True
 if __name__=="__main__":
     cnnJson = open("process_data.json", "r")
     inputInfo = json.load(cnnJson)
     cnnJson.close()
 
     wordVectorFile = inputInfo["WordVector"]
-    outputPath = inputInfo["OutPutPath"]
-    if not os.path.exists(outputPath):
-        os.makedirs(outputPath);
+    outputPathRoot = inputInfo["OutPutPath"]
     mrPath = inputInfo["mrPath"]
-    k = 60
+    k = int(inputInfo["WordVectorSize"])
 
     print "loading data...",
     x = cPickle.load(open(mrPath,"rb"))
     revs, W, W2, featureWordMap, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4], x[5]
     print "data loaded!"
-    mode= sys.argv[1]
-    word_vectors = sys.argv[2]
+    mode= "-nonstatic" #sys.argv[1]
+    word_vectors = "-word2vec"#sys.argv[2]
     if mode=="-nonstatic":
         print "model architecture: CNN-non-static"
         non_static=True
     elif mode=="-static":
         print "model architecture: CNN-static"
         non_static=False
-
     execfile("conv_net_classes_segment.py")
-    
     if word_vectors=="-rand":
         print "using: random vectors"
         U = W2
@@ -366,13 +395,25 @@ if __name__=="__main__":
         U = W
     results = []
     r = range(0,10)
-    TestTag = 1
-    for i in [TestTag]:
-        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=101,k=k, filter_h=5)
+    
+
+    datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=101,k=k, filter_h=5)
+    
+    print(os.getpid())
+    pid =-12
+    while(isProcessRunning(pid)):
+        print(str(pid) + " is running.\n")
+        time.sleep(2 * 60)
+
+    top_ks = [3]#1, 2, 3
+    for top_k in top_ks:
+        outputPath = outputPathRoot + "_"+str(top_k)
+        if not os.path.exists(outputPath):
+            os.makedirs(outputPath);
         perf = train_conv_net(datasets,
                               U,
                               featureWordMap,
-                              top_k = 3,
+                              top_k = top_k,
                               img_w=k,
                               lr_decay=0.95,
                               filter_hs=[3,4,5],
@@ -385,6 +426,4 @@ if __name__=="__main__":
                               batch_size=50,
                               dropout_rate=[0.5],
                               outputPath = outputPath)
-        print "cv: " + str(i) + ", perf: " + str(perf)
-        results.append(perf)
     print str(np.mean(results))
