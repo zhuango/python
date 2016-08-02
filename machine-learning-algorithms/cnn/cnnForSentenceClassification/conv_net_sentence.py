@@ -345,6 +345,12 @@ def isProcessRunning( processId):
         return False
     else:
         return True
+def listToStr(l):
+    string = ""
+    for item in l:
+        string += "_" + str(item) 
+        
+    return string
 
 if __name__=="__main__":
     cnnJson = open("process_data.json", "r")
@@ -356,12 +362,13 @@ if __name__=="__main__":
     mrPath = inputInfo["mrPath"]
     k = int(inputInfo["WordVectorSize"])
     max_l = int(inputInfo["maxLength"])
+
     print "loading data...",
     x = cPickle.load(open(mrPath,"rb"))
     revs, W, W2, featureWordMap, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4], x[5]
     print "data loaded!"
-    mode= sys.argv[1]
-    word_vectors = sys.argv[2]
+    mode= "-nonstatic"
+    word_vectors = "-word2vec"
     if mode=="-nonstatic":
         print "model architecture: CNN-non-static"
         non_static=True
@@ -382,30 +389,40 @@ if __name__=="__main__":
     datasets = make_idx_data_cv(revs, word_idx_map, 1, max_l=max_l,k=k, filter_h=5)
     
     print(os.getpid())
-    pid =6884
+    pid =13096
     while(isProcessRunning(pid)):
         print(str(pid) + " is running.\n")
         time.sleep(2 * 60)
 
-    top_ks = [1, 2, 3]#1, 2, 3
+    top_ks = [3, 4, 5]#1, 2, 3, 4, 5
+    hidden_units_Types=[[100, 50, 2]]#[100, 50, 2], [100,100,2], [100,200,2], [100,100, 50,2], [100, 200, 100,2]
+    dropout_rates = [[0.5], [0.5], [0.5, 0.5], [0.5, 0.5]]
+    activationList = [[Iden], [Iden], [Iden, Iden], [Iden, Iden]]
+    index = 0
     for top_k in top_ks:
-        outputPath = outputPathRoot + "_"+str(top_k)
-        if not os.path.exists(outputPath):
-            os.makedirs(outputPath);
-        perf = train_conv_net(datasets,
-                              U,
-                              featureWordMap,
-                              top_k = top_k,
-                              img_w=k,
-                              lr_decay=0.95,
-                              filter_hs=[3,4,5],
-                              conv_non_linear="relu",
-                              hidden_units=[100,50,2],
-                              shuffle_batch=True,
-                              n_epochs=25,
-                              sqr_norm_lim=9,
-                              non_static=non_static,
-                              batch_size=50,
-                              dropout_rate=[0.5],
-                              outputPath = outputPath)
-    print str(np.mean(results))
+        i = 0
+        for hidden_unitsSize in hidden_units_Types:
+            dropout_rate = list(dropout_rates[i])
+            activations = list(activationList[i])
+            i += 1
+
+            outputPath = outputPathRoot + listToStr(hidden_unitsSize) + "_top_" + str(top_k)
+            if not os.path.exists(outputPath):
+                os.makedirs(outputPath);
+            perf = train_conv_net(datasets,
+                                U,
+                                featureWordMap,
+                                top_k = top_k,
+                                img_w=k,
+                                lr_decay=0.95,
+                                filter_hs=[3,4,5],
+                                conv_non_linear="relu",
+                                hidden_units=list(hidden_unitsSize),
+                                shuffle_batch=True,
+                                n_epochs=25,
+                                sqr_norm_lim=3,
+                                non_static=non_static,
+                                batch_size=50,
+                                dropout_rate=dropout_rate,
+                                activations=activations,
+                                outputPath = outputPath)
