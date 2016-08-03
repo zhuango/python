@@ -41,7 +41,7 @@ plt.semilogx(alphas, np.array(scores) - np.array(scores_std) / np.sqrt(len(X)),
              'b--')
 plt.ylabel('CV score')
 plt.xlabel('alpha')
-plt.axhline(np.max(scores), linestyle='--', color='.5')
+#plt.axhline(np.max(scores), linestyle='--', color='.5')
 
 ##############################################################################
 # Bonus: how much can you trust the selection of alpha?
