@@ -23,8 +23,8 @@ def FindURLs(website, label, labelAttrs):
 # 2016: http://jmlr.org/proceedings/papers/v48/
 # 2015: http://jmlr.org/proceedings/papers/v37/
 # 2014: http://jmlr.org/proceedings/papers/v32/
-website = "http://jmlr.org/proceedings/papers/v32/"
-rootPath = "/home/laboratory/Documents/ebook/papers/ICML/2014/"
+website = "http://jmlr.org/proceedings/papers/v48/"
+rootPath = "/home/laboratory/Documents/ebook/papers/ICML/2016/"
 
 if not os.path.exists(rootPath):
     os.makedirs(rootPath)
@@ -33,7 +33,7 @@ counter = 0
 for name in URLs:
     counter += 1
     print("downloading " + name)
-    path = rootPath + name.replace("/", " ") + ".pdf"
+    path = rootPath + name.replace("/", " ").replace("\\", "") + ".pdf"
     if os.path.exists(path):
         continue
     urllib.urlretrieve(URLs[name], path)

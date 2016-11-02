@@ -24,8 +24,8 @@ def FindURLs(website, label, labelAttrs=None):
     return URLs
 # 2015:https://papers.nips.cc/book/advances-in-neural-information-processing-systems-28-2015
 # 2014:https://papers.nips.cc/book/advances-in-neural-information-processing-systems-27-2014
-website = "https://papers.nips.cc/book/advances-in-neural-information-processing-systems-28-2015"
-rootPath = "/home/laboratory/Documents/ebook/papers/NIPS/2015/"
+website = "https://papers.nips.cc/book/advances-in-neural-information-processing-systems-27-2014"
+rootPath = "/home/laboratory/Documents/ebook/papers/NIPS/2014/"
 
 if not os.path.exists(rootPath):
     os.makedirs(rootPath)
@@ -34,7 +34,7 @@ counter = 0
 for name in URLs:
     counter += 1
     print("downloading " + name)
-    path = rootPath + name.replace("/", " ") + ".pdf"
+    path = rootPath + name.replace("/", " ").replace("\\", "") + ".pdf"
     if os.path.exists(path):
         continue
     try:
