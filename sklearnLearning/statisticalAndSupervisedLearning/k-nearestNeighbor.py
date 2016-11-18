@@ -17,7 +17,10 @@ iris_y_test = iris_y[indices[-10:]]
 
 # create and fit a nearest-neighbor classifier
 from sklearn.neighbors import KNeighborsClassifier
-
+print(iris_X_train)
+print(iris_y_train)
+print(iris_X_test)
+print(iris_y_test)
 knn = KNeighborsClassifier()
 modelsInfo = knn.fit(iris_X_train, iris_y_train)
 print(modelsInfo)
