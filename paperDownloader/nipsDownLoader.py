@@ -32,6 +32,7 @@ if not os.path.exists(rootPath):
     os.makedirs(rootPath)
 URLs = FindURLs(website, 'li')
 counter = 0
+print(len(URLs))
 for name in URLs:
     counter += 1
     print("downloading " + name)
