@@ -36,5 +36,10 @@ for name in URLs:
     path = rootPath + name.replace("/", " ") + ".pdf"
     if os.path.exists(path):
         continue
-    urllib.urlretrieve(URLs[name], path)
+    try:
+        urllib.urlretrieve(URLs[name], path)
+    except KeyboardInterrupt:
+        break
+    except:
+        continue
 print ("Total: " + str(counter))
