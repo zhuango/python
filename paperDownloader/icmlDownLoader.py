@@ -24,7 +24,7 @@ def FindURLs(website, label, labelAttrs):
 # 2015: http://jmlr.org/proceedings/papers/v37/
 # 2014: http://jmlr.org/proceedings/papers/v32/
 website = "http://jmlr.org/proceedings/papers/v32/"
-rootPath = "/home/laboratory/Documents/ebook/papers/ICML/2014/"
+rootPath = "/home/jason/Documents/ebook/papers/ICML/2014/"
 
 if not os.path.exists(rootPath):
     os.makedirs(rootPath)

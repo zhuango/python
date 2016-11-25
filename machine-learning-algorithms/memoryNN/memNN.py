@@ -1,14 +1,34 @@
 import numpy as np
 import tensorflow as tf
 
-batchSize = 100
-vectorLength = 300
-sentMaxLength = 20
+batchSize = 2358
+vectorLength = 50
+sentMaxLength = 82
 hopNumber = 1
-classNumber = 2
-num_epoches = 10
+classNumber = 4
+num_epoches = 100
+resultOutput = '/home/laboratory/memoryCorpus/result/'
 
 def generateData():
+    contxtWordsDir = '/home/laboratory/memoryCorpus/contxtWords'
+    aspectWordsDir = '/home/laboratory/memoryCorpus/aspectWords'
+    labelsDir      = '/home/laboratory/memoryCorpus/labels'
+    positionsDir   = '/home/laboratory/memoryCorpus/positions'
+    sentLengthsDir = '/home/laboratory/memoryCorpus/sentLengths'
+
+    print("load context words vector...")
+    contxtWords = np.loadtxt(contxtWordsDir, np.float).reshape(batchSize, vectorLength, sentMaxLength)
+    print("load aspect words vector...")
+    aspectWords = np.loadtxt(aspectWordsDir, np.float).reshape(batchSize, vectorLength, 1)
+    print("load labels...")
+    labels      = np.loadtxt(labelsDir, np.float).reshape(batchSize, classNumber)
+    print("load position...")
+    position    = np.loadtxt(positionsDir, np.float).reshape(batchSize, 1, sentMaxLength)
+    print("load sentLength...")
+    sentLength  = np.loadtxt(sentLengthsDir, np.float).reshape(batchSize, 1, 1)
+
+    return (contxtWords, aspectWords, labels, position, sentLength)
+def generateDataFake():
     contxtWords = np.array(np.random.rand(batchSize, vectorLength, sentMaxLength))
     aspectWords = np.array(np.random.rand(batchSize, vectorLength, 1))
     labels = np.array(np.random.choice(2, (batchSize, 2), p=[0.5, 0.5]))
@@ -32,20 +52,20 @@ def generateData():
 # test_position_placeholder    = tf.placeholder(tf.float32, [batchSize, 1, sentMaxLength])
 # test_sentLength_placeholder  = tf.placeholder(tf.float32, [batchSize, 1, 1])
 
-contxtWords_placeholder = tf.placeholder(tf.float32, [batchSize, vectorLength, sentMaxLength])
-aspectWords_placeholder = tf.placeholder(tf.float32, [batchSize, vectorLength, 1])
-labels_placeholder      = tf.placeholder(tf.float32, [batchSize, 2])
-position_placeholder    = tf.placeholder(tf.float32, [batchSize, 1, sentMaxLength])
-sentLength_placeholder  = tf.placeholder(tf.float32, [batchSize, 1, 1])
+contxtWords_placeholder = tf.placeholder(tf.float32, [batchSize, vectorLength, sentMaxLength], name="contxtWords")
+aspectWords_placeholder = tf.placeholder(tf.float32, [batchSize, vectorLength, 1], name="aspectWords")
+labels_placeholder      = tf.placeholder(tf.float32, [batchSize, classNumber], name="labels")
+position_placeholder    = tf.placeholder(tf.float32, [batchSize, 1, sentMaxLength], name="position")
+sentLength_placeholder  = tf.placeholder(tf.float32, [batchSize, 1, 1], name="sentLength")
 
-attention_W = tf.Variable(np.random.rand(1, 2 * vectorLength), dtype = tf.float32)
-attention_b = tf.Variable(np.random.rand(1), dtype = tf.float32)
+attention_W = tf.Variable(np.random.rand(1, 2 * vectorLength), dtype = tf.float32, name="attention_W")
+attention_b = tf.Variable(np.random.rand(1), dtype = tf.float32, name="attention_b")
 
-linearLayer_W = tf.Variable(np.random.rand(vectorLength, vectorLength) / 100, dtype=tf.float32)
-linearLayer_b = tf.Variable(np.random.rand(vectorLength, 1) / 100, dtype = tf.float32)
+linearLayer_W = tf.Variable(np.random.rand(vectorLength, vectorLength) / 100, dtype=tf.float32, name="linearLayer_W")
+linearLayer_b = tf.Variable(np.random.rand(vectorLength, 1) / 100, dtype = tf.float32, name="linearLayer_b")
 
-softmaxLayer_W = tf.Variable(np.random.rand(classNumber, vectorLength), dtype= tf.float32)
-softmaxLayer_b = tf.Variable(np.random.rand(classNumber, 1), dtype= tf.float32)
+softmaxLayer_W = tf.Variable(np.random.rand(classNumber, vectorLength), dtype= tf.float32, name="softmaxLayer_W")
+softmaxLayer_b = tf.Variable(np.random.rand(classNumber, 1), dtype= tf.float32, name="softmaxLayer_b")
 
 vaspect = aspectWords_placeholder
 
@@ -62,10 +82,7 @@ for i in range(hopNumber):
     vaspect = tf.reduce_sum(alpha * Mi, 2, True) + linearLayerOut
 
 linearLayerOut = tf.pack([tf.matmul(softmaxLayer_W, input) + softmaxLayer_b for input in tf.unpack(vaspect, axis=0)])
-print(linearLayerOut)
-softOut = tf.nn.softmax(linearLayerOut, 1)
-print(softOut)
-calssification = tf.reduce_sum(tf.nn.softmax(linearLayerOut), 2)
+calssification = tf.reshape(tf.nn.softmax(linearLayerOut, 1), [batchSize, classNumber])
 
 losses = tf.nn.softmax_cross_entropy_with_logits(calssification, labels_placeholder)
 total_loss = tf.reduce_sum(losses)
@@ -76,14 +93,16 @@ with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
     loss_list = []
 
-    # contxtWords,aspectWords,labels,position,sentLength = generateData()
+    #merged_summary_op = tf.merge_all_summaries()
+    
+    #contxtWords,aspectWords,labels,position,sentLength = generateData()
     for epoch_idx in range(num_epoches):
         contxtWords,aspectWords,labels,position,sentLength = generateData()
 
         print("New data, epoch", epoch_idx)
 
         _calssification, _total_loss, _train_step =  sess.run(
-            [softOut, total_loss, train_step],
+            [calssification, total_loss, train_step],
             feed_dict=
             {
                 contxtWords_placeholder:contxtWords,
@@ -93,7 +112,8 @@ with tf.Session() as sess:
                 sentLength_placeholder :sentLength
             }
         )
+        #summary_writer = tf.train.SummaryWriter('/tmp/aspect_logs', sess.graph)
+        #summary_writer.add_summary(_calssification, epoch_idx)
         loss_list.append(_total_loss)
-        print(_calssification)
+        np.savetxt(resultOutput + "predict_" + str(epoch_idx) + ".txt", _calssification, fmt='%.5f',delimiter=' ')
         print("Step", epoch_idx, "Loss", _total_loss, "train_step", _train_step)
-        
