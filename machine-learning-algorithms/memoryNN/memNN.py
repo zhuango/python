@@ -1,20 +1,23 @@
 import numpy as np
 import tensorflow as tf
+import os
 
+corpusSize = 2358 
 batchSize = 2358
 vectorLength = 50
 sentMaxLength = 82
 hopNumber = 1
 classNumber = 4
-num_epoches = 100
-resultOutput = '/home/laboratory/memoryCorpus/result/'
-
+num_epoches = 1000
+resultOutput = '/home/jason/memoryCorpus/result/'
+if not os.path.exists(resultOutput):
+    os.makedirs(resultOutput)
 def generateData():
-    contxtWordsDir = '/home/laboratory/memoryCorpus/contxtWords'
-    aspectWordsDir = '/home/laboratory/memoryCorpus/aspectWords'
-    labelsDir      = '/home/laboratory/memoryCorpus/labels'
-    positionsDir   = '/home/laboratory/memoryCorpus/positions'
-    sentLengthsDir = '/home/laboratory/memoryCorpus/sentLengths'
+    contxtWordsDir = '/home/jason/memoryCorpus/contxtWords'
+    aspectWordsDir = '/home/jason/memoryCorpus/aspectWords'
+    labelsDir      = '/home/jason/memoryCorpus/labels'
+    positionsDir   = '/home/jason/memoryCorpus/positions'
+    sentLengthsDir = '/home/jason/memoryCorpus/sentLengths'
 
     print("load context words vector...")
     contxtWords = np.loadtxt(contxtWordsDir, np.float).reshape(batchSize, vectorLength, sentMaxLength)
@@ -58,14 +61,14 @@ labels_placeholder      = tf.placeholder(tf.float32, [batchSize, classNumber], n
 position_placeholder    = tf.placeholder(tf.float32, [batchSize, 1, sentMaxLength], name="position")
 sentLength_placeholder  = tf.placeholder(tf.float32, [batchSize, 1, 1], name="sentLength")
 
-attention_W = tf.Variable(np.random.rand(1, 2 * vectorLength), dtype = tf.float32, name="attention_W")
-attention_b = tf.Variable(np.random.rand(1), dtype = tf.float32, name="attention_b")
+attention_W = tf.Variable(np.random.uniform(-0.01, 0.01, (1, 2 * vectorLength)), dtype = tf.float32, name="attention_W")
+attention_b = tf.Variable(np.random.uniform(-0.01, 0.01), dtype = tf.float32, name="attention_b")
 
-linearLayer_W = tf.Variable(np.random.rand(vectorLength, vectorLength) / 100, dtype=tf.float32, name="linearLayer_W")
-linearLayer_b = tf.Variable(np.random.rand(vectorLength, 1) / 100, dtype = tf.float32, name="linearLayer_b")
+linearLayer_W = tf.Variable(np.random.uniform(-0.01, 0.01, (vectorLength, vectorLength)) , dtype=tf.float32, name="linearLayer_W")
+linearLayer_b = tf.Variable(np.random.uniform(-0.01, 0.01, (vectorLength, 1)) , dtype = tf.float32, name="linearLayer_b")
 
-softmaxLayer_W = tf.Variable(np.random.rand(classNumber, vectorLength), dtype= tf.float32, name="softmaxLayer_W")
-softmaxLayer_b = tf.Variable(np.random.rand(classNumber, 1), dtype= tf.float32, name="softmaxLayer_b")
+softmaxLayer_W = tf.Variable(np.random.uniform(-0.01, 0.01, (classNumber, vectorLength)), dtype= tf.float32, name="softmaxLayer_W")
+softmaxLayer_b = tf.Variable(np.random.uniform(-0.01, 0.01, (classNumber, 1)), dtype= tf.float32, name="softmaxLayer_b")
 
 vaspect = aspectWords_placeholder
 
@@ -87,7 +90,8 @@ calssification = tf.reshape(tf.nn.softmax(linearLayerOut, 1), [batchSize, classN
 losses = tf.nn.softmax_cross_entropy_with_logits(calssification, labels_placeholder)
 total_loss = tf.reduce_sum(losses)
 
-train_step = tf.train.AdagradOptimizer(0.3).minimize(total_loss)
+#train_step = tf.train.GradientDescentOptimizer(0.01).minimize(total_loss)
+train_step = tf.train.AdagradOptimizer(0.15).minimize(total_loss)
 
 with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
@@ -95,9 +99,9 @@ with tf.Session() as sess:
 
     #merged_summary_op = tf.merge_all_summaries()
     
-    #contxtWords,aspectWords,labels,position,sentLength = generateData()
+    contxtWords,aspectWords,labels,position,sentLength = generateData()
     for epoch_idx in range(num_epoches):
-        contxtWords,aspectWords,labels,position,sentLength = generateData()
+        #contxtWords,aspectWords,labels,position,sentLength = generateData()
 
         print("New data, epoch", epoch_idx)
 
