@@ -10,7 +10,7 @@ sentMaxLength = 82
 hopNumber = 2
 classNumber = 4
 num_epoches = 2000
-resultOutput = '/home/laboratory/memoryCorpus/result/'
+resultOutput = '/home/laboratory/memoryCorpus/result_Adadelta/'
 if not os.path.exists(resultOutput):
     os.makedirs(resultOutput)
 
@@ -110,15 +110,16 @@ for i in range(hopNumber):
 
 labelsSeries  = tf.unpack(labels_placeholder)
 linearLayerOutSeries = [tf.matmul(softmaxLayer_W, input) + softmaxLayer_b for input in tf.unpack(vaspect)]
+#layerOut = linearLayerOutSeries[0]
+#test = layerOut / tf.reduce_sum(tf.exp(layerOut - tf.reduce_max(layerOut)))
+#print(test)
+losses = [tf.nn.softmax_cross_entropy_with_logits(layerOut - tf.reduce_max(layerOut), label, dim=0) for layerOut, label in zip(linearLayerOutSeries, labelsSeries)]
+total_loss = tf.reduce_sum(losses)
 
-losses = [tf.nn.softmax_cross_entropy_with_logits(layerOut, label, dim=0) for layerOut, label in zip(linearLayerOutSeries, labelsSeries)]
-total_loss = tf.reduce_mean(losses)
-
-train_step = tf.train.GradientDescentOptimizer(0.01).minimize(total_loss)
-#train_step = tf.train.AdagradOptimizer(1).minimize(total_loss, var_list=[attention_W, attention_b, linearLayer_W, linearLayer_b,softmaxLayer_W, softmaxLayer_b])
-
-linearLayerOut = tf.pack(linearLayerOutSeries)
-calssification = tf.reshape(tf.nn.softmax(linearLayerOut, 1), [batchSize, classNumber])
+#train_step = tf.train.GradientDescentOptimizer(0.1).minimize(total_loss)
+#train_step = tf.train.AdagradOptimizer(0.1).minimize(total_loss)
+train_step = tf.train.AdadeltaOptimizer(0.3).minimize(total_loss)
+calssification = tf.reshape([tf.nn.softmax(layerOut - tf.reduce_max(layerOut), dim=0) for layerOut in linearLayerOutSeries], [batchSize, classNumber])
 
 with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
@@ -130,12 +131,13 @@ with tf.Session() as sess:
     contxtWords,aspectWords,labels,position,sentLength, mask = generateData()
     for epoch_idx in range(num_epoches):
         #contxtWords,aspectWords,labels,position,sentLength = generateData()
-
+        results = []
+        sum_loss= 0.0
         print("New data, epoch", epoch_idx)
-        for i in range(corpusSize // batchSize):
+        for i in    range(corpusSize // batchSize):
             
             _calssification, _total_loss, _train_step =  sess.run(
-                [vaspect, total_loss, train_step],
+                [calssification, total_loss, train_step],
                 feed_dict=
                 {
                     contxtWords_placeholder:contxtWords[i * batchSize:(i + 1) *batchSize],
@@ -146,9 +148,10 @@ with tf.Session() as sess:
                     mask_placeholder       :mask[i * batchSize:(i + 1) *batchSize]
                 }
             )
-            loss_list.append(_total_loss)
+            results.append(_calssification.reshape(4))
+            sum_loss += _total_loss
             #print(_calssification)
-            np.savetxt(resultOutput + "predict_" + str(i) + ".txt", _calssification, fmt='%.6f',delimiter=' ')
-            print("Step", i, "Loss", _total_loss, "train_step", _train_step)
-
-            #summary_writer.add_summary(_total_loss, epoch_idx)
+        np.savetxt(resultOutput + "predict_" + str(epoch_idx) + ".txt", np.asarray(results, dtype=np.float32), fmt='%.5f',delimiter=' ')
+        print("Iteration", epoch_idx, "Loss", _total_loss, "train_step", _train_step)
+        loss_list.append(sum_loss)
+        #summary_writer.add_summary(_total_loss, epoch_idx)

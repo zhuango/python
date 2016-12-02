@@ -3,25 +3,31 @@ import tensorflow as tf
 import os
 import matplotlib.pyplot as plt
 
-corpusSize = 2358 
+corpusSize = 2358
+testDataSize = 49
+testMaxLength = 82
 batchSize = 1
 vectorLength = 50
 sentMaxLength = 82
-hopNumber = 2
+hopNumber = 1
 classNumber = 4
 num_epoches = 2000
+weightDecay = 0.01
+
+trainDatasetPath = "/home/laboratory/memoryCorpus/train/"
+testDatasetPath = "/home/laboratory/memoryCorpus/test/"
 resultOutput = '/home/laboratory/memoryCorpus/result/'
 if not os.path.exists(resultOutput):
     os.makedirs(resultOutput)
 
-def generateData():
+def generateData(datasetPath,corpusSize, sentMaxLength):
     batchSizeOffset = batchSize - corpusSize % batchSize
-    contxtWordsDir = '/home/laboratory/memoryCorpus/contxtWords'
-    aspectWordsDir = '/home/laboratory/memoryCorpus/aspectWords'
-    labelsDir      = '/home/laboratory/memoryCorpus/labels'
-    positionsDir   = '/home/laboratory/memoryCorpus/positions'
-    sentLengthsDir = '/home/laboratory/memoryCorpus/sentLengths'
-    maskDir        = '/home/laboratory/memoryCorpus/mask'
+    contxtWordsDir = datasetPath + 'contxtWords'
+    aspectWordsDir = datasetPath + 'aspectWords'
+    labelsDir      = datasetPath + 'labels'
+    positionsDir   = datasetPath + 'positions'
+    sentLengthsDir = datasetPath + 'sentLengths'
+    maskDir        = datasetPath + 'mask'
 
     print("load context words vector...")
     contxtWords = np.loadtxt(contxtWordsDir, np.float).reshape(corpusSize, vectorLength, sentMaxLength)
@@ -110,15 +116,22 @@ for i in range(hopNumber):
 
 labelsSeries  = tf.unpack(labels_placeholder)
 linearLayerOutSeries = [tf.matmul(softmaxLayer_W, input) + softmaxLayer_b for input in tf.unpack(vaspect)]
+#layerOut = linearLayerOutSeries[0]
+#test = layerOut / tf.reduce_sum(tf.exp(layerOut - tf.reduce_max(layerOut)))
+#print(test)
+regu  = tf.reduce_sum(attention_W * attention_W)
+regu += tf.reduce_sum(attention_b * attention_b)
+regu += tf.reduce_sum(linearLayer_W * linearLayer_W) 
+regu += tf.reduce_sum(linearLayer_b * linearLayer_b)
+regu += tf.reduce_sum(softmaxLayer_W * softmaxLayer_W)
+regu = weightDecay * regu
 
-losses = [tf.nn.softmax_cross_entropy_with_logits(layerOut, label, dim=0) for layerOut, label in zip(linearLayerOutSeries, labelsSeries)]
-total_loss = tf.reduce_mean(losses)
+losses = [tf.nn.softmax_cross_entropy_with_logits(layerOut - tf.reduce_max(layerOut), label, dim=0) for layerOut, label in zip(linearLayerOutSeries, labelsSeries)]
+total_loss = tf.reduce_sum(losses) + regu
 
-train_step = tf.train.GradientDescentOptimizer(0.01).minimize(total_loss)
-#train_step = tf.train.AdagradOptimizer(1).minimize(total_loss, var_list=[attention_W, attention_b, linearLayer_W, linearLayer_b,softmaxLayer_W, softmaxLayer_b])
-
-linearLayerOut = tf.pack(linearLayerOutSeries)
-calssification = tf.reshape(tf.nn.softmax(linearLayerOut, 1), [batchSize, classNumber])
+#train_step = tf.train.GradientDescentOptimizer(0.001).minimize(total_loss)
+train_step = tf.train.AdagradOptimizer(0.01).minimize(total_loss)
+calssification = tf.reshape([tf.nn.softmax(layerOut - tf.reduce_max(layerOut), dim=0) for layerOut in linearLayerOutSeries], [batchSize, classNumber])
 
 with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
@@ -127,15 +140,17 @@ with tf.Session() as sess:
     merged_summary_op = tf.merge_all_summaries()
     summary_writer = tf.train.SummaryWriter('/tmp/aspect_logs', sess.graph)
 
-    contxtWords,aspectWords,labels,position,sentLength, mask = generateData()
+    contxtWords, aspectWords, labels, position, sentLength,  mask  = generateData(trainDatasetPath, corpusSize, sentMaxLength)
+    contxtWordsT,aspectWordsT,labelsT,positionT,sentLengthT, maskT = generateData(testDatasetPath, testDataSize, testMaxLength)
     for epoch_idx in range(num_epoches):
         #contxtWords,aspectWords,labels,position,sentLength = generateData()
-
+        results = []
+        sum_loss= 0.0
         print("New data, epoch", epoch_idx)
-        for i in range(corpusSize // batchSize):
+        for i in    range(corpusSize // batchSize):
             
             _calssification, _total_loss, _train_step =  sess.run(
-                [vaspect, total_loss, train_step],
+                [calssification, total_loss, train_step],
                 feed_dict=
                 {
                     contxtWords_placeholder:contxtWords[i * batchSize:(i + 1) *batchSize],
@@ -146,9 +161,24 @@ with tf.Session() as sess:
                     mask_placeholder       :mask[i * batchSize:(i + 1) *batchSize]
                 }
             )
-            loss_list.append(_total_loss)
+            sum_loss += _total_loss
             #print(_calssification)
-            np.savetxt(resultOutput + "predict_" + str(i) + ".txt", _calssification, fmt='%.6f',delimiter=' ')
-            print("Step", i, "Loss", _total_loss, "train_step", _train_step)
+        for i in range(testDataSize):
 
-            #summary_writer.add_summary(_total_loss, epoch_idx)
+            _calssification =  sess.run(
+                calssification,
+                feed_dict=
+                {
+                    contxtWords_placeholder:contxtWordsT[i * batchSize:(i + 1) *batchSize],
+                    aspectWords_placeholder:aspectWordsT[i * batchSize:(i + 1) *batchSize],
+                    labels_placeholder     :labelsT[i * batchSize:(i + 1) *batchSize],
+                    position_placeholder   :positionT[i * batchSize:(i + 1) *batchSize],
+                    sentLength_placeholder :sentLengthT[i * batchSize:(i + 1) *batchSize],
+                    mask_placeholder       :maskT[i * batchSize:(i + 1) *batchSize]
+                }
+            )
+            results.append(_calssification.reshape(4))
+        np.savetxt(resultOutput + "predict_" + str(epoch_idx) + ".txt", np.asarray(results, dtype=np.float32), fmt='%.5f',delimiter=' ')
+        print("Iteration", epoch_idx, "Loss", sum_loss / corpusSize, "train_step", _train_step)
+        loss_list.append(sum_loss)
+        #summary_writer.add_summary(_total_loss, epoch_idx)

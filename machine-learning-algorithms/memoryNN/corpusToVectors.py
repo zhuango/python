@@ -20,7 +20,7 @@ def maxLen(file):
                 n = lineLength
     return n
 
-def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, labels, positions, sentLengths, wordDimension):
+def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, labels, positions, sentLengths, mask, wordDimension):
     aspectTermPlaceHolder= "$T$"
     classNumber = 4
     corpusStream = open(corpus, 'r')
@@ -30,6 +30,7 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
     labelsStream            = open(labels, 'w')
     positionsStream         = open(positions, 'w')
     sentLengths             = open(sentLengths, 'w')
+    mask                    = open(mask, 'w')
 
     maxLength = maxLen(corpus)
     n = len(corpusStream.readlines()) / 3
@@ -41,7 +42,7 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
 
         sentVectorStr = ""
         sentWords = sent.split(" ")
-        sentenceLength = len(sentWords) - 1
+        sentenceLength = len(sentWords)
         for word in sentWords:
             if word == aspectTermPlaceHolder:
                 continue
@@ -50,7 +51,7 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
             else:
                 for value in np.random.rand(wordDimension) - 0.5:
                     sentVectorStr += str(value) + " "
-        for i in range(sentenceLength,maxLength - 1):
+        for i in range(sentenceLength - 1,maxLength - 1):
             for value in np.zeros(wordDimension, dtype=float):
                 sentVectorStr += str(value) + " "
         
@@ -86,25 +87,37 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
 
         sentLengths.write(str(len(sent.split(" ")) - 1) + "\n")
 
-        positionsVector = list(np.arange(maxLength) + 1)
+        positionsVector = list(np.arange(sentenceLength) + 1)
+        for i in range(sentenceLength,maxLength):
+            positionsVector.append(0)
         positionsVectorStr = ""
         del positionsVector[sentWords.index(aspectTermPlaceHolder)]
         for position in positionsVector:
             positionsVectorStr += str(position) + " "
 
         positionsStream.write(positionsVectorStr.strip() + "\n")
+
+        maskStr= ""
+        for item in positionsVector:
+            if item == 0:
+                maskStr += '-1000000.0 '
+            else:
+                maskStr += '0 '
+        mask.write(maskStr.strip() + '\n')
+
         
-
 corpusDir           = '/home/laboratory/memoryCorpus/'
+corpusVectorDir     = '/home/laboratory/memoryCorpus/test/'
 wordVectorDir       = corpusDir + 'en_vectors_50.txt'
-corpus              = corpusDir + "laptops_train.xml.seg.addConf"
+corpus              = corpusDir + "laptops_trial.xml.seg.addConf"
 
-contxtWordsVector   = corpusDir + 'contxtWords'
-aspectWordsVector   = corpusDir + 'aspectWords'
-labels              = corpusDir + 'labels'
-positions           = corpusDir + 'positions'
-sentLengths         = corpusDir + 'sentLengths'
+contxtWordsVector   = corpusVectorDir + 'contxtWords'
+aspectWordsVector   = corpusVectorDir + 'aspectWords'
+labels              = corpusVectorDir + 'labels'
+positions           = corpusVectorDir + 'positions'
+sentLengths         = corpusVectorDir + 'sentLengths'
+mask                = corpusVectorDir + 'mask'
 wordDimension       = 50
 
 wordVectors = loadDict(wordVectorDir)
-generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, labels, positions, sentLengths, wordDimension)
+generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, labels, positions, sentLengths,mask, wordDimension)
