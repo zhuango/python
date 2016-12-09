@@ -3,7 +3,7 @@ import tensorflow as tf
 import os
 import matplotlib.pyplot as plt
 
-corpusSize = 2358
+corpusSize = 1977#2358
 testDataSize = 49
 testMaxLength = 82
 batchSize = 1
@@ -20,6 +20,18 @@ resultOutput = '/home/laboratory/memoryCorpus/result/'
 if not os.path.exists(resultOutput):
     os.makedirs(resultOutput)
 
+def loadData(datasetPath, shape, sentMaxLength, orders):
+    print("load " + datasetPath)
+    datasets = np.loadtxt(datasetPath, np.float)
+    datasets = np.reshape(datasets, shape)
+    shuffleDatasets = np.zeros(shape)
+    index = 0
+    for i in orders:
+        shuffleDatasets[index] = datasets[i]
+        index += 1
+    del datasets
+    return shuffleDatasets
+    
 def generateData(datasetPath,corpusSize, sentMaxLength):
     batchSizeOffset = batchSize - corpusSize % batchSize
     contxtWordsDir = datasetPath + 'contxtWords'
@@ -28,29 +40,27 @@ def generateData(datasetPath,corpusSize, sentMaxLength):
     positionsDir   = datasetPath + 'positions'
     sentLengthsDir = datasetPath + 'sentLengths'
     maskDir        = datasetPath + 'mask'
+    
+    orders = np.arange(corpusSize)
+    np.random.shuffle(orders)
 
-    print("load context words vector...")
-    contxtWords = np.loadtxt(contxtWordsDir, np.float).reshape(corpusSize, vectorLength, sentMaxLength)
+    contxtWords = loadData(contxtWordsDir, (corpusSize, vectorLength, sentMaxLength), sentMaxLength, orders)
     #contxtWords = np.concatenate( (contxtWords, np.zeros((batchSizeOffset, vectorLength, sentMaxLength))) )
     # print(contxtWords[0])
-    print("load aspect words vector...")
-    aspectWords = np.loadtxt(aspectWordsDir, np.float).reshape(corpusSize, vectorLength, 1)
-    #aspectWords = np.concatenate( (aspectWords, np.zeros((batchSizeOffset, vectorLength, 1))) )
     
-    print("load labels...")
-    labels      = np.loadtxt(labelsDir, np.float).reshape(corpusSize, classNumber, 1)
+    aspectWords = loadData(aspectWordsDir, (corpusSize, vectorLength, 1), sentMaxLength, orders)
+    #aspectWords = np.concatenate( (aspectWords, np.zeros((batchSizeOffset, vectorLength, 1))) )
+
+    labels      = loadData(labelsDir, (corpusSize, classNumber, 1), sentMaxLength, orders)
     #labels      maskDir= np.concatenate((labels, np.zeros((batchSizeOffset, classNumber, 1))))
     
-    print("load position...")
-    position    = np.loadtxt(positionsDir, np.float).reshape(corpusSize, 1, sentMaxLength)
+    position    = loadData(positionsDir, (corpusSize, 1, sentMaxLength), sentMaxLength, orders)
     #position    = np.concatenate( (position, np.zeros((batchSizeOffset, 1, sentMaxLength))) )
     
-    print("load sentLength...")
-    sentLength  = np.loadtxt(sentLengthsDir, np.float).reshape(corpusSize, 1, 1)
+    sentLength  = loadData(sentLengthsDir, (corpusSize, 1, 1), sentMaxLength, orders)
     #sentLength  = np.concatenate( (sentLength, np.zeros((batchSizeOffset, 1, 1)) + sentLength[corpusSize - 1][0][0]) )
     
-    print("load mask...")
-    mask        = np.loadtxt(maskDir, np.float).reshape(corpusSize, 1, sentMaxLength)
+    mask        = loadData(maskDir, (corpusSize, 1, sentMaxLength), sentMaxLength, orders)
 
     return (contxtWords, aspectWords, labels, position, sentLength, mask)
 def generateDataFake():
@@ -107,7 +117,10 @@ for i in range(hopNumber):
     expanded_vaspect = vaspect
     for j in range(sentMaxLength - 1):
         expanded_vaspect = tf.concat(2, [expanded_vaspect, vaspect])
+    print(Mi)
+    print(expanded_vaspect)
     attentionInputs = tf.unpack(tf.concat(1, [Mi, expanded_vaspect]), axis=0)
+    print(attentionInputs)
     gi = tf.pack([tf.tanh(tf.matmul(attention_W, input) + attention_b) for input in attentionInputs]) + mask_placeholder
     
     alpha = tf.nn.softmax(gi)
@@ -129,7 +142,8 @@ regu = weightDecay * regu
 losses = [tf.nn.softmax_cross_entropy_with_logits(layerOut - tf.reduce_max(layerOut), label, dim=0) for layerOut, label in zip(linearLayerOutSeries, labelsSeries)]
 total_loss = tf.reduce_sum(losses) + regu
 
-#train_step = tf.train.GradientDescentOptimizer(0.001).minimize(total_loss)
+#train_step = tf.train.GradientDescentOptimizer(0.02).minimize(total_loss)
+
 train_step = tf.train.AdagradOptimizer(0.01).minimize(total_loss)
 calssification = tf.reshape([tf.nn.softmax(layerOut - tf.reduce_max(layerOut), dim=0) for layerOut in linearLayerOutSeries], [batchSize, classNumber])
 
@@ -179,6 +193,6 @@ with tf.Session() as sess:
             )
             results.append(_calssification.reshape(4))
         np.savetxt(resultOutput + "predict_" + str(epoch_idx) + ".txt", np.asarray(results, dtype=np.float32), fmt='%.5f',delimiter=' ')
-        print("Iteration", epoch_idx, "Loss", sum_loss / corpusSize, "train_step", _train_step)
+        print("Iteration", epoch_idx, "Loss", sum_loss / (corpusSize * 2), "train_step", _train_step)
         loss_list.append(sum_loss)
         #summary_writer.add_summary(_total_loss, epoch_idx)

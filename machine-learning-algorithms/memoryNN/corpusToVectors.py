@@ -32,14 +32,15 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
     sentLengths             = open(sentLengths, 'w')
     mask                    = open(mask, 'w')
 
-    maxLength = maxLen(corpus)
+    maxLength = 83#maxLen(corpus)
     n = len(corpusStream.readlines()) / 3
     corpusStream.seek(0)
     for i in range(n):
         sent        = corpusStream.readline().strip()
         aspectTerm  = corpusStream.readline().strip()
         polarity    = int(corpusStream.readline().strip())
-
+        contxtHasWordInTable = False
+        aspectHasWordInTable = False
         sentVectorStr = ""
         sentWords = sent.split(" ")
         sentenceLength = len(sentWords)
@@ -48,14 +49,13 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
                 continue
             if word in wordVectors:
                 sentVectorStr += wordVectors[word] + " "
+                contxtHasWordInTable = True
             else:
                 for value in np.random.rand(wordDimension) - 0.5:
                     sentVectorStr += str(value) + " "
         for i in range(sentenceLength - 1,maxLength - 1):
             for value in np.zeros(wordDimension, dtype=float):
                 sentVectorStr += str(value) + " "
-        
-        contxtWordsVectorStream.write(sentVectorStr.strip() + "\n")
 
         aspectTermWords = aspectTerm.split(" ")
         aspectTermLength = len(aspectTermWords)
@@ -65,6 +65,7 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
             for word in aspectTermWords:
                 if word in wordVectors:
                     vector += StrToNumpyVector(wordVectors[word])
+                    aspectHasWordInTable = True
                 else:
                     vector += np.random.rand(wordDimension) - 0.5
             vector = vector / aspectTermLength
@@ -73,9 +74,13 @@ def generateInput(wordVectors, corpus, contxtWordsVector, aspectWordsVector, lab
         else:
             if aspectTerm in wordVectors:
                 aspectVectorStr += wordVectors[aspectTerm]
+                aspectHasWordInTable = True
             else:
                 for value in np.random.rand(wordDimension) - 0.5:
                     aspectVectorStr += str(value) + " "
+        if (not aspectHasWordInTable) or (not contxtHasWordInTable):
+            continue
+        contxtWordsVectorStream.write(sentVectorStr.strip() + "\n")
         aspectWordsVectorStream.write(aspectVectorStr.strip() + "\n")
         
         oneHot = np.zeros(classNumber, dtype=np.float)
