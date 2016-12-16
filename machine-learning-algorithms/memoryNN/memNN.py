@@ -9,7 +9,7 @@ testMaxLength = 82
 batchSize = 1
 vectorLength = 50
 sentMaxLength = 82
-hopNumber = 2
+hopNumber = 5
 classNumber = 4
 num_epoches = 2000
 weightDecay = 0.001
@@ -76,9 +76,10 @@ softmaxLayer_b = tf.Variable(np.random.uniform(-0.01, 0.01, (classNumber, 1)), d
 
 vaspect = aspectWords_placeholder
 
+Vi = 1.0 - position_placeholder / sentLength_placeholder - (hopNumber / vectorLength) * (1.0 - 2.0 * (position_placeholder / sentLength_placeholder))
+Mi = Vi * contxtWords_placeholder
+
 for i in range(hopNumber):
-    Vi = 1.0 - position_placeholder / sentLength_placeholder - (hopNumber / vectorLength) * (1.0 - 2.0 * (position_placeholder / sentLength_placeholder))
-    Mi = Vi * contxtWords_placeholder
     
     expanded_vaspect = vaspect
     for j in range(sentMaxLength - 1):
@@ -91,7 +92,7 @@ for i in range(hopNumber):
     linearLayerOut = tf.matmul(linearLayer_W, vaspect) + linearLayer_b
     vaspect = tf.reduce_sum(alpha * Mi, 1, True) + linearLayerOut
 
-linearLayerOut = tf.matmul(softmaxLayer_W, vaspect) + softmaxLayer_b
+finallinearLayerOut = tf.matmul(softmaxLayer_W, vaspect) + softmaxLayer_b
 
 # regu  = tf.reduce_sum(attention_W * attention_W)
 # regu += tf.reduce_sum(attention_b * attention_b)
@@ -100,11 +101,10 @@ linearLayerOut = tf.matmul(softmaxLayer_W, vaspect) + softmaxLayer_b
 # regu += tf.reduce_sum(softmaxLayer_W * softmaxLayer_W)
 # regu += tf.reduce_sum(softmaxLayer_b * softmaxLayer_b)
 # regu = weightDecay * regu
-print(linearLayerOut)
-calssification = tf.nn.softmax(linearLayerOut - tf.reduce_max(linearLayerOut), dim=0)
-total_loss = tf.nn.softmax_cross_entropy_with_logits(linearLayerOut - tf.reduce_max(linearLayerOut), labels_placeholder, dim=0)
+calssification = tf.nn.softmax(finallinearLayerOut - tf.reduce_max(finallinearLayerOut), dim=0)
+total_loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(finallinearLayerOut - tf.reduce_max(finallinearLayerOut), labels_placeholder, dim=0))
 
-ada = tf.train.AdagradOptimizer(0.3)
+ada = tf.train.AdagradOptimizer(0.1)# 0.3 for hopNumber = 1
 train_step = ada.minimize(total_loss)
 
 with tf.Session() as sess:
