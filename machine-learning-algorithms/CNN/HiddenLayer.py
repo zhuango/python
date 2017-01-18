@@ -9,7 +9,7 @@ class HiddenLayer(object):
                 rng.uniform(
                     low  = -np.sqrt(6. / (inputSize + outputSize)),
                     high =  np.sqrt(6. / (inputSize + outputSize)),
-                    size = (outputSize, inputSize)
+                    size = (inputSize, outputSize)
                 ),
                 dtype = np.float
             )
@@ -18,13 +18,12 @@ class HiddenLayer(object):
             W = tf.Variable(initial_value=WInitialValues, name='W', dtype=tf.float32)
             
         if b is None:
-            bValues = np.zeros((outputSize,1), dtype=np.float)
+            bValues = np.zeros((1,outputSize), dtype=np.float)
             b = tf.Variable(initial_value=bValues, name='b', dtype=tf.float32)
         self.W = W
         self.b = b
-        print(tf.matmul(self.W, self.input))
-        print(self.b)
-        tempOutput  = tf.matmul(self.W, self.input) + self.b
+
+        tempOutput  = tf.matmul(self.input, self.W) + self.b
         self.output = (
             tempOutput if activation is None
             else activation(tempOutput)
