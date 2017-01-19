@@ -56,14 +56,14 @@ def trainNB0(trainMatrix,trainCategory):
             p0Num += trainMatrix[i]
             p0Denom += sum(trainMatrix[i])
     # calc p(wi|ci)
-    # log(p(w0|ci)) + log(p(w1|ci)) + ... = log(p(w0|ci)) + p(w1|ci) + ...)
+    # log(p(w0|ci)) + log(p(w1|ci)) + ... = log(p(w0|ci)) * p(w1|ci) * ...)
     p1Vect = log(p1Num / p1Denom)
     p0Vect = log(p0Num / p0Denom)
     return p0Vect, p1Vect, pAbusive
 
 def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
     # sum up p(wi|ci) * p(ci). vec2Classify choose which w has contribution.
-    # p(w) is the same, thus we can drop it.
+    # p(w) is the same for all ci and wi, thus we can drop it.
 
     p1 = sum(vec2Classify * p1Vec) + log(pClass1)
     p0 = sum(vec2Classify * p0Vec) + log(1.0 - pClass1)
