@@ -21,7 +21,7 @@ def createVocabList(dataSet):
     return list(vocabSet)
 
 # we treat the presence or absence of a word as a feature
-# Bernoulli
+# Bernoulli for each feature
 def setOfWords2Vec(vocabList, inputSet):
     returnVec = [0]*len(vocabList)
     for word in inputSet:
@@ -32,7 +32,7 @@ def setOfWords2Vec(vocabList, inputSet):
     return returnVec
 
 # we treat the time of presence of a word as a feature
-# Multinomial
+# Multinomial Bernoulli for each feature
 def bagOfWords2VecMN(vocabList, inputSet):
     returnVec = [0]*len(vocabList)
     for word in inputSet:
