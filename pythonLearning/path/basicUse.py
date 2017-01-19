@@ -17,3 +17,5 @@ def traversalDir(dirname):
         if item.is_file():
             print(str(item))
 traversalDir("../")
+file = Path('./testf/test')
+file.rename("test1")
