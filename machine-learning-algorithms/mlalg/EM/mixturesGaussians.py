@@ -115,13 +115,17 @@ while step < 50:
         new_mean  = np.zeros((2, 1))
         new_sigma = np.zeros((2, 2))
         new_pi    = 0
+
         for j in range(n):
             nk += gama[j][i]
             new_mean  += gama[j][i] * datas[j].reshape(2, 1)
-            dur = (datas[j].reshape(2, 1) - new_mean).reshape(2, 1)
-            new_sigma += gama[j][i] * np.dot(dur, dur.T)
         means[i]  = new_mean / nk
+
+        for j in range(n):
+            dur = (datas[j].reshape(2, 1) - means[i]).reshape(2, 1)
+            new_sigma += gama[j][i] * np.dot(dur, dur.T)
         sigmas[i] = new_sigma / nk
+
         pik[i]   = nk / n
     new_likelihood = 0
     for i in range(n):
@@ -131,6 +135,7 @@ while step < 50:
         new_likelihood += np.log(sampleProb)
     if np.abs(new_likelihood - logLikelihood) < 0.1:
         break
+    logLikelihood = new_likelihood
     step += 1
 
 print(means)
