@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
 def getLabels(data, clusters):
     label = 0
@@ -141,3 +142,22 @@ while step < 50:
 print(means)
 print(sigmas)
 print(pik)
+
+figure =plt.figure()
+ax=figure.add_subplot(111,projection='3d')
+X = np.arange(-10, 20, 0.25)
+Y = np.arange(-10, 20, 0.25)
+X, Y = np.meshgrid(X, Y)
+dataList = []
+density = []
+for i in range(120):
+    for j in range(120):
+        sample = np.array([X[i][j], Y[i][j]], dtype=np.float32).reshape((2, 1))
+        sampleDensity = 0
+        for m in range(k):
+            sampleDensity += pik[m] * multivariateDensity(sample, means[m], sigmas[m])
+        density.append(sampleDensity)
+density = np.array(density).reshape((120, 120))
+
+ax.plot_surface(X, Y, density)
+plt.show()
