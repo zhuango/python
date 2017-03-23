@@ -40,3 +40,4 @@ nosetests.xml
 .vscode
 *.npz
 *.npz.pkl
+*.txt
