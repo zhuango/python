@@ -16,4 +16,4 @@ from theano import tensor as T
 import subprocess
 
 subprocess.call(["mkdir", 'test'])
-
+subprocess.call(['./print'])
