@@ -4,7 +4,7 @@ import numpy as np
 from collections import defaultdict
 import math
 
-class Sample(object):
+class Sample():
     LabelTable = {}
     WordsTable = {}
     DictLength = 0
@@ -20,11 +20,6 @@ class Sample(object):
             return str(seqNum) + "_" + str(y1State)
             
     def GetFeature(self, seqNum, y1State, y2State = None, train = None):
-        """ Create the vector of active indicies for this label setting. """
-        # label-label-token; bigram features
-        #for f in self.sequence[t].attributes:
-        #    yield '[%s,%s,%s]' % (yp,y,f)
-        # label-token; emission features
         WordsTable = self.WordsTable
         word0  = self.sequence[seqNum]
         if word0 not in WordsTable:
@@ -114,12 +109,12 @@ class CRF:
 
         for i in xrange(0, seqLength):
             for j in xrange(0, self.mLabelStateSize):
-                WnodeGradient += np.exp(forwardMessages[i][j] + backwardMessages[i][j] - logNormalized).clip(0.0, 1.0) * sequence.GetFeature(i, j)
+                WnodeGradient += np.exp(forwardMessages[i][j] + backwardMessages[i][j] - logNormalized) * sequence.GetFeature(i, j)
         
         for i in xrange(1, seqLength):
             for j in xrange(0, self.mLabelStateSize):
                 for k in xrange(0, self.mLabelStateSize):
-                    WedgeGradient += np.exp(forwardMessages[i-1][j] + logPotentials[i-1][j][k] + backwardMessages[i][k] - logNormalized).clip(0.0, 1.0) * sequence.GetFeature(i, j, k)
+                    WedgeGradient += np.exp(forwardMessages[i-1][j] + logPotentials[i-1][j][k] + backwardMessages[i][k] - logNormalized) * sequence.GetFeature(i, j, k)
 
         # print(WnodeGradient, WedgeGradient)
         return (WnodeGradient, WedgeGradient)
