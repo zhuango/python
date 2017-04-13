@@ -72,4 +72,14 @@ print(train[1].Labels)
 labelStrs = []
 labels = crf.Sample(test[0])
 print("prediction: " + str(labels))
-print(test[0].Labels)
+print("true      : " + str(test[0].Labels))
+
+labelStrs = []
+labels = crf.Sample(test[1])
+print("prediction: " + str(labels))
+print("true      : " + str(test[1].Labels))
+
+labelStrs = []
+labels = crf.Sample(test[2])
+print("prediction: " + str(labels))
+print("true      : " + str(test[2].Labels))
