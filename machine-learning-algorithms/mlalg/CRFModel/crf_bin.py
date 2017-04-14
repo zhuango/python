@@ -82,17 +82,19 @@ class CRFBin:
         messages = np.zeros((seqLength, self.mLabelStateSize))
         messages[0] = logPotential0
         for i in range(1, seqLength):
-            b = logPotentials[i-1].max(0)
-            integralPotentials = np.exp(logPotentials[i-1] - b).sum(0)
-            messages[i] = np.log(integralPotentials) + b + messages[i-1]
+            Fs = logPotentials[i-1] + messages[i-1].reshape(self.mLabelStateSize, 1)
+            b = Fs.max(0)
+            integralPotentials = np.exp(Fs - b).sum(0)
+            messages[i] = np.log(integralPotentials) + b
         return messages
 
     def backward(self, logPotentials, seqLength):
         messages = np.zeros((seqLength, self.mLabelStateSize))
         for i in reversed(range(0, seqLength-1)):
-            b = logPotentials[i].max(1, keepdims=True)
-            integralPotentials = np.exp(logPotentials[i] - b).sum(1)
-            messages[i] = np.log(integralPotentials) + b.T + messages[i+1]
+            Fs = logPotentials[i] + messages[i+1]
+            b = Fs.max(1, keepdims=True)
+            integralPotentials = np.exp(Fs - b).sum(1)
+            messages[i] = np.log(integralPotentials) + b.T
         return messages
 
     def LogLikelihood(self, sequence):
@@ -128,11 +130,13 @@ class CRFBin:
 
         for i in range(0, seqLength):
             for j in range(0, self.mLabelStateSize):
+                #print(forwardMessages[i][j] + backwardMessages[i][j] - logNormalized)
                 WnodeGradient[sequence.GetFeature(i, j)] += np.exp(forwardMessages[i][j] + backwardMessages[i][j] - logNormalized).clip(0.0, 1.0)
         
         for i in range(1, seqLength):
             for j in range(0, self.mLabelStateSize):
                 for k in range(0, self.mLabelStateSize):
+                    #print(forwardMessages[i-1][j] + logPotentials[i-1][j][k] + backwardMessages[i][k] - logNormalized)
                     WedgeGradient[sequence.GetFeature(i, j, k)] += np.exp(forwardMessages[i-1][j] + logPotentials[i-1][j][k] + backwardMessages[i][k] - logNormalized).clip(0.0, 1.0)
 
         # print(WnodeGradient, WedgeGradient)
@@ -148,7 +152,7 @@ class CRFBin:
         w = logPotential0
         for i in range(1, seqLength):
             w = logPotentials[i - 1]+ np.reshape(w, (self.mLabelStateSize, 1))
-            pathMatrix[i] = w.argmax(0)
+            pathMatrix[i-1] = w.argmax(0)
             w = w.max(0)
         labels[-1] = w.argmax()
         for i in reversed(range(0, seqLength - 1)):
@@ -170,6 +174,7 @@ class CRFBin:
                 for i in range(0, dataSize):
                     sequence   = sequences[i]
                     labels     = sequence.Labels
+                    #print("cal gradient of normalize respect W ...")
                     (WnodeGradient, WedgeGradient) = self.gradientOfNormalizedRespectW(sequence)
                     self.mWnode -= WnodeGradient * rate
                     self.mWedge -= WedgeGradient * rate
@@ -179,14 +184,16 @@ class CRFBin:
 
                     for j in range(1, sequence.Length):
                         self.mWedge[sequence.GetFeature(j, labels[j-1], labels[j])] += rate
-                    self.mWnode -= self.mWnode * rate * 0.1
-                    self.mWedge -= self.mWedge * rate * 0.1
+                    # self.mWnode -= self.mWnode * rate * 0.1
+                    # self.mWedge -= self.mWedge * rate * 0.1
+
+                print("cal loglikehood ...")
                 likelihood = 0.0
                 for i in range(0, dataSize):
                     sequence = sequences[i]
                     currentLikelihood = self.LogLikelihood(sequence)
                     likelihood += currentLikelihood
-                    print(currentLikelihood)
+                    #print(currentLikelihood)
                 print("Loglihood: " + str(float(likelihood) / dataSize))
                 if likelihood <= oldLikelihood:
                     earlyStopCount -= 1

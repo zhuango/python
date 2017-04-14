@@ -62,12 +62,13 @@ nodeFeatureSize = Sample.LabelSize * Sample.DictLength
 edgeDeatureSize = Sample.LabelSize * Sample.LabelSize * Sample.DictLength
 crf = CRFBin(nodeFeatureSize, edgeDeatureSize, len(labelTableverse))
 print("training...")
-crf.SGA(train[0:300], iterations=30, a0=0.1, validate=None)
+#0.01
+crf.SGA(train[0:300], iterations=1000, a0=1, validate=None)
 print("sample...")
 
 labels = crf.Sample(train[1])
 print("prediction: " + str(labels))
-print(train[1].Labels)
+print("true      : " + str(train[1].Labels))
 
 labelStrs = []
 labels = crf.Sample(test[0])
