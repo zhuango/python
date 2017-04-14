@@ -23,23 +23,6 @@ class Sample():
                 WordsTable[word]  = Sample.DictLength
                 Sample.DictLength += 1
 
-        # LabelSize = Sample.LabelSize
-        # unigramFeatureNumber = 0
-        # bigramFeatureNumber = 0
-        # for word in WordsTable:
-        #     self.unigram[word] = np.zeros(LabelSize, dtype=np.int32)
-        #     self.bigram [word] = np.zeros((LabelSize, LabelSize), dtype=np.int32)
-        #     for label in LabelTable:
-
-        #         self.unigram[word][label] = unigramFeatureNumber
-        #         unigramFeatureNumber += 1
-
-        #         for label1 in LabelTable:
-
-        #             self.bigram[word][label][label1] = bigramFeatureNumber
-        #             bigramFeatureNumber += 1
-        
-
     def hashKey(self, seqNum, y0State, y1State = None):
         if y2State != None:
             return str(seqNum) + "_" + str(y0State) + "+" + str(y1State)
