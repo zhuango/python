@@ -8,6 +8,6 @@ import torch.optim as optim
 
 torch.manual_seed(1)
 
-lin = nn.Linear(5, 3)
+lin = nn.Linear(5, 2)
 data = autograd.Variable(torch.randn(2, 5))
 print(lin(data))
