@@ -86,7 +86,7 @@ def memModel(contxtWords, aspectWords, position, sentLength):
         vaspect = torch.sum(alpha.expand_as(Mi) * Mi, 1) + linearLayerOut
 
     finallinearLayerOut = torch.mm(softmaxLayer_W, vaspect) + softmaxLayer_b
-    #print(finallinearLayerOut)
+    print(finallinearLayerOut)
     return finallinearLayerOut
 
 loss_function = torch.nn.NLLLoss()
@@ -100,7 +100,7 @@ def lossModel(contxtWords, aspectWords, position, sentLength, labels):
     log_prob = F.log_softmax(finallinearLayerOut.view(1, classNumber))
 
     label = int(labels.argmax())
-    total_loss = loss_function(log_prob.view(1, classNumber), Variable(torch.LongTensor([label])))
+    total_loss = loss_function(log_prob, Variable(torch.LongTensor([label])))
     calssification = softmax(finallinearLayerOut.view(1, classNumber))
 
     return total_loss, calssification
