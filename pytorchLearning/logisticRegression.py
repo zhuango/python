@@ -57,7 +57,8 @@ print(next(model.parameters())[:, word_to_ix['creo']])
 
 loss_function = nn.NLLLoss()
 optimizer = optim.SGD(model.parameters(), lr = 0.1)
-
+print("DDDDDDDDDDDDDDDDDDDDDDDDDD")
+print(list(model.parameters()))
 for epoch in range(100):
     for instance, label in data:
         model.zero_grad()
@@ -66,7 +67,6 @@ for epoch in range(100):
         target = autograd.Variable(make_target(label, label_to_ix))
         
         log_probs = model(bow_vec)
-
         loss = loss_function(log_probs, target)
         loss.backward()
         optimizer.step()

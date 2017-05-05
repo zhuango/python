@@ -31,3 +31,6 @@ print(new_var_z.creator)
 # component of your network, you MUST NOT break the Variable chain from 
 # that component to your loss Variable. If you do, the loss will have no idea 
 # your component exists, and its parameters can’t be updated.
+
+newView = var_z.view(4,1)
+print(newView.creator)
