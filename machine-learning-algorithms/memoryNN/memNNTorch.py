@@ -13,7 +13,7 @@ testMaxLength = 82
 batchSize = 1
 vectorLength = 50
 sentMaxLength = 82
-hopNumber = 2
+hopNumber = 1
 classNumber = 4
 num_epoches = 2000
 weightDecay = 0.001
@@ -46,7 +46,7 @@ def generateData(datasetPath,corpusSize, sentMaxLength):
     positionsDir   = datasetPath + 'positions'
     sentLengthsDir = datasetPath + 'sentLengths'
     
-    contxtWords = loadData(contxtWordsDir, (corpusSize, vectorLength, sentMaxLength), sentMaxLength)
+    contxtWords = loadData(contxtWordsDir, (corpusSize, sentMaxLength, vectorLength), sentMaxLength)
     aspectWords = loadData(aspectWordsDir, (corpusSize, vectorLength, 1), sentMaxLength)
     labels      = loadData(labelsDir, (corpusSize, classNumber, 1), sentMaxLength, np.int32)
     position    = loadData(positionsDir, (corpusSize, 1, sentMaxLength), sentMaxLength)
@@ -60,33 +60,33 @@ def plot(loss_list):
     plt.draw()
     plt.pause(0.0001)
 
-attention_W = Variable(torch.FloatTensor(np.random.uniform(0.01, -0.01, (1, 2 * vectorLength))), requires_grad=True)
-attention_b = Variable(torch.FloatTensor(np.random.uniform(0.01, -0.01, 1)), requires_grad=True)
+attention_W = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (1, 2 * vectorLength))), requires_grad=True)
+attention_b = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, 1)), requires_grad=True)
 
-linearLayer_W = Variable(torch.FloatTensor(np.random.uniform(0.01, -0.01, (vectorLength, vectorLength))), requires_grad=True)
-linearLayer_b = Variable(torch.FloatTensor(np.random.uniform(0.01, -0.01, (vectorLength, 1))), requires_grad=True)
+linearLayer_W = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (vectorLength, vectorLength))), requires_grad=True)
+linearLayer_b = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (vectorLength, 1))), requires_grad=True)
 
-softmaxLayer_W = Variable(torch.FloatTensor(np.random.uniform(0.01, -0.01, (classNumber, vectorLength))), requires_grad=True)
-softmaxLayer_b = Variable(torch.FloatTensor(np.random.uniform(0.01, -0.01, (classNumber, 1))), requires_grad=True)
+softmaxLayer_W = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (classNumber, vectorLength))), requires_grad=True)
+softmaxLayer_b = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (classNumber, 1))), requires_grad=True)
 
 softmax = torch.nn.Softmax()
 
 def memModel(contxtWords, aspectWords, position, sentLength):
     vaspect = aspectWords
-    Vi = 1.0 - position / sentLength - (hopNumber / vectorLength) * (1.0 - 2.0 * (position / sentLength))
-    
-    Mi = Vi.expand_as(contxtWords) * contxtWords
     for i in range(hopNumber):
+        Vi = 1.0 - position / sentLength - (i / vectorLength) * (1.0 - 2.0 * (position / sentLength))
+        Mi = Vi.expand_as(contxtWords) * contxtWords
+
         attentionInputs = torch.cat([Mi, vaspect.expand(vectorLength, sentLength)])
         attentionA = torch.mm(attention_W, attentionInputs)
+
         gi = torch.tanh(attentionA + attention_b.expand_as(attentionA))
-        
         alpha = softmax(gi)
+
         linearLayerOut = torch.mm(linearLayer_W, vaspect) + linearLayer_b
         vaspect = torch.sum(alpha.expand_as(Mi) * Mi, 1) + linearLayerOut
 
     finallinearLayerOut = torch.mm(softmaxLayer_W, vaspect) + softmaxLayer_b
-    print(finallinearLayerOut)
     return finallinearLayerOut
 
 loss_function = torch.nn.NLLLoss()
@@ -97,12 +97,12 @@ def lossModel(contxtWords, aspectWords, position, sentLength, labels):
                                     Variable(torch.Tensor(aspectWords)), 
                                     Variable(torch.Tensor(position)),
                                     sentLength)
+
     log_prob = F.log_softmax(finallinearLayerOut.view(1, classNumber))
 
     label = int(labels.argmax())
     total_loss = loss_function(log_prob, Variable(torch.LongTensor([label])))
     calssification = softmax(finallinearLayerOut.view(1, classNumber))
-
     return total_loss, calssification
 
 def testModel(contxtWords, aspectWords, position, sentLength):
@@ -138,32 +138,27 @@ for epoch_idx in range(num_epoches):
     count = 0
     correct = 0
     for i in range(corpusSize):
-        _total_loss,  _calssification = lossModel(contxtWords[i,:,0:sentLength[i]], aspectWords[i], position[i,:,0:sentLength[i]], int(sentLength[i]), labels[i])
+        total_loss,  calssification = lossModel(contxtWords[i,0:sentLength[i]].T, aspectWords[i], position[i,:,0:sentLength[i]], int(sentLength[i]), labels[i])
 
-        _total_loss.backward()
+        total_loss.backward()
         optimizer.step()
 
         for para in parameters:
-            #print(para.grad)
             para.grad.data.zero_()
+        sum_loss += total_loss
 
-        sum_loss += _total_loss
-
-        if np.argmax(_calssification.data.numpy()) == np.argmax(labels[i]):
+        if np.argmax(calssification.data.numpy()) == np.argmax(labels[i]):
             correct += 1.0
         count += 1
-        # print(_attention_W)
-        # print(sentLength[i])
         
     print("Iteration", epoch_idx, "Loss", sum_loss.data.numpy() / (corpusSize * 2), "Accuracy: ", float(correct / count))
         
     count = 0
     correct = 0
     for i in range(testDataSize):
-        _calssification = testModel(contxtWordsT[i,:,0:sentLengthT[i]], aspectWordsT[i], positionT[i,:,0:sentLengthT[i]], int(sentLengthT[i]))
-
-        #results.append(_calssification.reshape(4))            
-        if np.argmax(_calssification.data.numpy()) == np.argmax(labels[i]):
+        calssification = testModel(contxtWordsT[i,0:sentLengthT[i]].T, aspectWordsT[i], positionT[i,:,0:sentLengthT[i]], int(sentLengthT[i]))
+     
+        if np.argmax(calssification.data.numpy()) == np.argmax(labelsT[i]):
             correct += 1.0
         count += 1
     print("test Accuracy: ", float(correct / count))
