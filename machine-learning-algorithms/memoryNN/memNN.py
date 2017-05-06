@@ -9,7 +9,7 @@ testMaxLength = 82
 batchSize = 1
 vectorLength = 50
 sentMaxLength = 82
-hopNumber = 2
+hopNumber = 1
 classNumber = 4
 num_epoches = 2000
 weightDecay = 0.001
@@ -65,22 +65,23 @@ position_placeholder    = tf.placeholder(tf.float32, [1, None], name="position")
 sentLength_placeholder  = tf.placeholder(tf.float32, [1, 1], name="sentLength")
 mask_placeholder        = tf.placeholder(tf.float32, [1, None], name="mask")
 
-attention_W = tf.Variable(np.random.uniform(-0.01, 0.01, (1, 2 * vectorLength)), dtype = tf.float32, name="attention_W")
-attention_b = tf.Variable(np.random.uniform(-0.01, 0.01), dtype = tf.float32, name="attention_b")
+attention_W = tf.Variable(np.random.uniform(-0.0, 0.0, (1, 2 * vectorLength)), dtype = tf.float32, name="attention_W")
+attention_b = tf.Variable(np.random.uniform(-0.0, 0.0), dtype = tf.float32, name="attention_b")
 
-linearLayer_W = tf.Variable(np.random.uniform(-0.01, 0.01, (vectorLength, vectorLength)) , dtype=tf.float32, name="linearLayer_W")
-linearLayer_b = tf.Variable(np.random.uniform(-0.01, 0.01, (vectorLength, 1)) , dtype = tf.float32, name="linearLayer_b")
+linearLayer_W = tf.Variable(np.random.uniform(-0.0, 0.0, (vectorLength, vectorLength)) , dtype=tf.float32, name="linearLayer_W")
+linearLayer_b = tf.Variable(np.random.uniform(-0.0, 0.0, (vectorLength, 1)) , dtype = tf.float32, name="linearLayer_b")
 
-softmaxLayer_W = tf.Variable(np.random.uniform(-0.01, 0.01, (classNumber, vectorLength)), dtype= tf.float32, name="softmaxLayer_W")
-softmaxLayer_b = tf.Variable(np.random.uniform(-0.01, 0.01, (classNumber, 1)), dtype= tf.float32, name="softmaxLayer_b")
+softmaxLayer_W = tf.Variable(np.random.uniform(-0.0, 0.0, (classNumber, vectorLength)), dtype= tf.float32, name="softmaxLayer_W")
+softmaxLayer_b = tf.Variable(np.random.uniform(-0.0, 0.0, (classNumber, 1)), dtype= tf.float32, name="softmaxLayer_b")
 
 vaspect = aspectWords_placeholder
 
-Vi = 1.0 - position_placeholder / sentLength_placeholder - (hopNumber / vectorLength) * (1.0 - 2.0 * (position_placeholder / sentLength_placeholder))
-Mi = Vi * contxtWords_placeholder
 
 for i in range(hopNumber):
     
+    Vi = 1.0 - position_placeholder / sentLength_placeholder - (i / vectorLength) * (1.0 - 2.0 * (position_placeholder / sentLength_placeholder))
+    Mi = Vi * contxtWords_placeholder
+
     expanded_vaspect = vaspect
     for j in range(sentMaxLength - 1):
         expanded_vaspect = tf.concat(1, [expanded_vaspect, vaspect])
