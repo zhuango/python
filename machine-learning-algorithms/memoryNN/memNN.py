@@ -43,7 +43,7 @@ def generateData(datasetPath,corpusSize, sentMaxLength):
     sentLengthsDir = datasetPath + 'sentLengths'
     maskDir        = datasetPath + 'mask'
     
-    contxtWords = loadData(contxtWordsDir, (corpusSize, vectorLength, sentMaxLength), sentMaxLength)
+    contxtWords = loadData(contxtWordsDir, (corpusSize, sentMaxLength, vectorLength), sentMaxLength)
     aspectWords = loadData(aspectWordsDir, (corpusSize, vectorLength, 1), sentMaxLength)
     labels      = loadData(labelsDir, (corpusSize, classNumber, 1), sentMaxLength)
     position    = loadData(positionsDir, (corpusSize, 1, sentMaxLength), sentMaxLength)
@@ -134,7 +134,7 @@ with tf.Session() as sess:
                 [calssification, total_loss, train_step, attention_W],
                 feed_dict=
                 {
-                    contxtWords_placeholder:contxtWords[i],
+                    contxtWords_placeholder:contxtWords[i].T,
                     aspectWords_placeholder:aspectWords[i],
                     labels_placeholder     :labels[i],
                     position_placeholder   :position[i],
@@ -161,7 +161,7 @@ with tf.Session() as sess:
                 calssification,
                 feed_dict=
                 {
-                    contxtWords_placeholder:contxtWordsT[i],
+                    contxtWords_placeholder:contxtWordsT[i].T,
                     aspectWords_placeholder:aspectWordsT[i],
                     labels_placeholder     :labelsT[i],
                     position_placeholder   :positionT[i],
