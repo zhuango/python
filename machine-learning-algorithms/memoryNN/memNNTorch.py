@@ -13,7 +13,7 @@ testMaxLength = 82
 batchSize = 1
 vectorLength = 50
 sentMaxLength = 82
-hopNumber = 1
+hopNumber = 6
 classNumber = 4
 num_epoches = 2000
 weightDecay = 0.001
@@ -60,14 +60,14 @@ def plot(loss_list):
     plt.draw()
     plt.pause(0.0001)
 
-attention_W = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (1, 2 * vectorLength))), requires_grad=True)
-attention_b = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, 1)), requires_grad=True)
+attention_W = Variable(torch.FloatTensor(np.random.uniform(-0.01, 0.01, (1, 2 * vectorLength))), requires_grad=True)
+attention_b = Variable(torch.FloatTensor(np.random.uniform(-0.01, 0.01, 1)), requires_grad=True)
 
-linearLayer_W = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (vectorLength, vectorLength))), requires_grad=True)
-linearLayer_b = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (vectorLength, 1))), requires_grad=True)
+linearLayer_W = Variable(torch.FloatTensor(np.random.uniform(-0.01, 0.01, (vectorLength, vectorLength))), requires_grad=True)
+linearLayer_b = Variable(torch.FloatTensor(np.random.uniform(-0.01, 0.01, (vectorLength, 1))), requires_grad=True)
 
-softmaxLayer_W = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (classNumber, vectorLength))), requires_grad=True)
-softmaxLayer_b = Variable(torch.FloatTensor(np.random.uniform(-0.002, -0.002, (classNumber, 1))), requires_grad=True)
+softmaxLayer_W = Variable(torch.FloatTensor(np.random.uniform(-0.01, 0.01, (classNumber, vectorLength))), requires_grad=True)
+softmaxLayer_b = Variable(torch.FloatTensor(np.random.uniform(-0.01, 0.01, (classNumber, 1))), requires_grad=True)
 
 softmax = torch.nn.Softmax()
 
@@ -116,7 +116,7 @@ def testModel(contxtWords, aspectWords, position, sentLength):
     return calssification
 
 parameters = [attention_W, attention_b, linearLayer_W, linearLayer_b, softmaxLayer_W, softmaxLayer_b]
-optimizer = optim.Adagrad(parameters, lr = 0.1)
+optimizer = optim.Adagrad(parameters, lr = 0.05)
 
 loss_list = []
 
