@@ -1,3 +1,7 @@
+# Tuples do double-duty: 
+# they can be used as immutable lists and 
+# also as records with no field names. 
+
 t = 12345, 54321, 'hello!'
 print(t)
 print("t[0] = ", t[0])

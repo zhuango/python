@@ -1,3 +1,12 @@
+# Container sequences
+# list, tuple and collections.deque can hold items of different types.
+# Flat sequences
+# str, bytes, bytearray, memoryview and array.array hold items of one type.
+
+# Mutable sequences
+# list, bytearray, array.array, collections.deque and memoryview
+# Immutable sequences
+# tuple, str and bytes
 a = [66.25, 333, 333, 1, 1234.5]
 print(a.count(333), a.count(66.25), a.count('x'))
 
@@ -7,7 +16,7 @@ a.append(333)
 print("after append 333: ", a)
 
 a.remove(333)
-print("after remove 333 = ", a) # remove forst occur
+print("after remove 333 = ", a) # remove first occur
 
 a.reverse()
 print("after reverse() a = ", a)
@@ -57,3 +66,13 @@ b = [-1, 1, 66.25, 333, 333, 1234.5]
 print("b = ", b)
 del b
 # print("after del b, b = ", b) #error occur, b cannot be used.
+
+print("_____________mul list__________")
+a = [1, 2, 3]
+a = a * 3
+print(a)
+
+a = [[1, 2, 3]]
+a = a * 3
+a[0][0] = 1000
+print(a)
