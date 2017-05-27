@@ -67,3 +67,23 @@ from collections import OrderedDict
 newDict = OrderedDict((x, y) for x, y in zip([1, 2,3, 4], [5, 6, 7,8]))
 for key in newDict:
     sys.stdout.write(str(key) + " " + str(newDict[key]) + "\n")
+
+print("_______dict conp____")
+DIAL_CODES = [
+(86, 'China'),
+(91, 'India'),
+(1, 'United States'),
+(62, 'Indonesia'),
+(55, 'Brazil'),
+(92, 'Pakistan'),
+(880, 'Bangladesh'),
+(234, 'Nigeria'),
+(7, 'Russia'),
+(81, 'Japan'),
+]
+
+country_code = {country: code for code, country in DIAL_CODES}
+print(country_code)
+
+print({code: country for country, code in country_code.items() if code < 66})
+
