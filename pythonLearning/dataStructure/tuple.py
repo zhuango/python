@@ -28,3 +28,5 @@ print("y from t : ", y)
 print("z from t : ", z)
 
 print("速度发送地方")
+
+print("______tuple of list__________")
