@@ -32,7 +32,8 @@ knights = {'gallahad': 'the pure', 'robin': 'the brave'}
 for k, v in knights.items():
     print(k, v)
 
-for i, v in enumerate(['tic', 'tac', 'teo']):
+# the second parameter mean that the index start with 1.
+for i, v in enumerate(['tic', 'tac', 'teo'], 1):
     print(i, v)
 
 questions = ['name', 'quest', 'favorite color']
@@ -84,6 +85,61 @@ DIAL_CODES = [
 
 country_code = {country: code for code, country in DIAL_CODES}
 print(country_code)
+print(type(country_code.items()))
 
 print({code: country for country, code in country_code.items() if code < 66})
 
+print("__processing missing value___")
+
+import sys
+import re
+from collections import defaultdict
+
+WORD_RE  =re.compile('\w+')
+index = {}
+indexDefault = defaultdict(list)
+with open(sys.argv[0], encoding='utf-8') as fp:
+    for line_no, line in enumerate(fp, 1):
+        for match in WORD_RE.finditer(line):
+            word = match.group()
+            column_no = match.start() + 1
+            location = (line_no, column_no)
+
+            # occurrences = index.get(word, [])
+            # occurrences.append(location)
+            # index[word] = occurrences
+
+            #index.setdefault(word, []).append(location)
+
+            indexDefault[word].append(location)
+
+for word in sorted(index, key=str.upper):
+    print(word, index[word])
+
+print("__imp a string key dict___")
+
+class StrKeyDict0(dict):
+    def __missing__(self, key):
+        if isinstance(key, str):
+            raise KeyError(key)
+        return self[str(key)]
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+    
+    def __contains__(self, key):
+        return key in self.keys() or str(key) in self.keys()
+
+d = StrKeyDict0([('2', 'two'), ('4', 'four')])
+print(d['2'])
+print(d[2])
+#print(d[1])
+
+print(d.get('2'))
+print(d.get(2))
+print(d.get(1, 'N/A'))
+
+print(2 in d)
+print(1 in d)
