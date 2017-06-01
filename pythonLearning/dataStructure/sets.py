@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+
+# more faster than set([..])
 basket = {'apple', 'orange', 'apple', 'pear', 'orange', 'banana'}
 print(basket)
 
@@ -15,3 +18,8 @@ print("a ^ b", a ^ b) # letters in a or b but not both
 
 a = {x for x in 'abracadabra' if x not in 'abc'}
 print("a = ", a)
+
+from unicodedata import name
+
+specialChar = { chr(i) for i in range(32, 256) if 'SIGN' in name(chr(i), '')}
+print(specialChar)

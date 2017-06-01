@@ -32,7 +32,7 @@ x = Variable(torch.randn(3, 4))
 print(x)
 print(torch.sum(x, 0))
 print(torch.max(x))
-print(torch.cat([x, x], 1))
+print(torch.cat([x, Variable(torch.zeros(3,1))], 1))
 
 y = torch.FloatStorage(1).float()
 y = torch.randn(1, 4)
