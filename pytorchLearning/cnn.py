@@ -26,6 +26,15 @@ for para in m.parameters():
 output = m(input)
 print(output)
 
+print("====================Pooling=====================")
+v1 = Variable(torch.randn(1, 3, 4))
+v2 = Variable(torch.randn(1, 3, 4))
+v3 = Variable(torch.randn(1, 3, 4))
+
+v = torch.cat([v1, v2, v3])
+print(v)
+print(torch.max(v, 0)[0].view(3, 4))
+
     # 2d
     # f = ConvNd(_single(stride), _single(padding), _single(dilation), False,
     #            _single(0), groups, torch.backends.cudnn.benchmark, torch.backends.cudnn.enabled)
