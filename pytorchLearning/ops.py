@@ -71,3 +71,8 @@ print(t)
 val, index = torch.max(t, 1)
 val, index = t.max(0)
 print(np.argmax(t.data.numpy()))
+
+x = Variable(torch.randn(3, 2))
+print(x)
+result = torch.sum(x, 1)
+print(result)

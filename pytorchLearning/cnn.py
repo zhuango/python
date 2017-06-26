@@ -17,7 +17,9 @@ print(output)
 
 
 print("=================2d conv================")
-m = nn.Conv2d(1, 1, (1, 3), stride=2, padding=(0, 0), bias=False)
+m = nn.Conv2d(1, 10, (1, 3), stride=2, padding=(0, 0), bias=False)
+pooling = nn.MaxPool2d((2, 2), stride=1)
+
 input = Variable(torch.ones(1, 1, 3, 5))
 print(input)
 for para in m.parameters():
@@ -25,6 +27,14 @@ for para in m.parameters():
     print(torch.sum(para))
 output = m(input)
 print(output)
+
+poolingResult = pooling(output)
+print(poolingResult)
+print("max for myself")
+print(output.view(1, 10, -1))
+poolingResult = torch.max(output.view(1, 10, -1), 2)
+print(poolingResult[0])
+print(poolingResult[0].size())
 
 print("====================Pooling=====================")
 v1 = Variable(torch.randn(1, 3, 4))
