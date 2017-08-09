@@ -18,7 +18,7 @@ print(output)
 
 print("=================2d conv================")
 m = nn.Conv2d(1, 10, (1, 3), stride=2, padding=(0, 0), bias=False)
-pooling = nn.MaxPool2d((2, 2), stride=1)
+pooling = nn.MaxPool2d((1, 2), stride=1)
 
 input = Variable(torch.ones(1, 1, 3, 5))
 print(input)
