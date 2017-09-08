@@ -13,7 +13,7 @@ w1 = torch.randn(D_in, H).type(dtype)
 w2 = torch.randn(H, D_out).type(dtype)
 
 learning_rate = 1e-6
-for t in range(500):
+for t in range(10000):
     # forward
     h = x.mm(w1)
     h_relu = h.clamp(min=0)

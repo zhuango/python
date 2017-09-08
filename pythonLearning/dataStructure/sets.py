@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 # init set by using {}.
+# more faster than set([..])
 basket = {'apple', 'orange', 'apple', 'pear', 'orange', 'banana'}
 print(basket)
 

@@ -59,7 +59,7 @@ loss_function = nn.NLLLoss()
 optimizer = optim.SGD(model.parameters(), lr = 0.1)
 print("DDDDDDDDDDDDDDDDDDDDDDDDDD")
 print(list(model.parameters()))
-for epoch in range(100):
+for epoch in range(10000):
     for instance, label in data:
         model.zero_grad()
 
