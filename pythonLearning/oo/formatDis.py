@@ -21,3 +21,10 @@ v1 = Vector2D(3, 4)
 print(format(v1))
 
 print(format(v1, '.3f'))
+
+v1 = Vector2D(3, 4)
+print(format(v1))
+
+print(format(v1, '.2f'))
+print(format(v1, '.3e'))
+print(format(v1, '.3p'))

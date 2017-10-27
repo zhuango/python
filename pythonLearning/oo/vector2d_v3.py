@@ -3,6 +3,11 @@ import math
 
 class Vector2D:
     typecode = 'd'
+    # By defining __slots__ in the class, you are telling the interpreter:
+    # These are all the instance attributes in this class.
+    __slots__ = ('__x', '__y', '__weakref__')
+
+
     def __init__(self, x, y):
         self.__x = float(x)
         self.__y = float(y)

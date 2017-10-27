@@ -14,3 +14,14 @@ print(b)
 b[0] = 1000
 print(a)
 print(b)
+
+tuplea = (1, 2,3, 4)
+tupleb = tuple(tuplea)
+print(tuplea is tupleb)
+tuplec = tupleb[:]
+print(tuplec is tupleb)
+# same behavior can be observed with instances of str, bytes and frozenset.
+
+a = frozenset((1,2, 3))
+b = a.copy()
+print(a is b)

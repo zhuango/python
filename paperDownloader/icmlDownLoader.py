@@ -20,11 +20,13 @@ def FindURLs(website, label, labelAttrs):
         URLs[paperName] = paperAddr
     return URLs
 
+# 2017: http://proceedings.mlr.press/v70/
 # 2016: http://jmlr.org/proceedings/papers/v48/
 # 2015: http://jmlr.org/proceedings/papers/v37/
 # 2014: http://jmlr.org/proceedings/papers/v32/
-website = "http://jmlr.org/proceedings/papers/v32/"
-rootPath = "/home/jason/Documents/ebook/papers/ICML/2014/"
+# colt 2017: http://proceedings.mlr.press/v65/
+website = "http://proceedings.mlr.press/v65/"
+rootPath = "/home/laboratory/Documents/ebook/papers/COLT/2017/"
 
 if not os.path.exists(rootPath):
     os.makedirs(rootPath)

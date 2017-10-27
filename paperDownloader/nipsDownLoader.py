@@ -22,11 +22,13 @@ def FindURLs(website, label, labelAttrs=None):
         except:
             continue
     return URLs
+
 # 2015:https://papers.nips.cc/book/advances-in-neural-information-processing-systems-28-2015
 # 2014:https://papers.nips.cc/book/advances-in-neural-information-processing-systems-27-2014
 # 2016:https://papers.nips.cc/book/advances-in-neural-information-processing-systems-29-2016
+# 2017:
 website = "https://papers.nips.cc/book/advances-in-neural-information-processing-systems-29-2016"
-rootPath = "/home/laboratory/Documents/ebook/papers/NIPS/2016/"
+rootPath = "/home/laboratory/Documents/ebook/papers/NIPS/2017/"
 
 if not os.path.exists(rootPath):
     os.makedirs(rootPath)
