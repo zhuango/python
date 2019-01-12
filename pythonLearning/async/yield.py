@@ -16,13 +16,16 @@ def yieldTest():
 gen = yieldTest()
 b = next(gen)
 print("b = " + str(b))
+print("+++++++++++++++++++++++++++++++++++++++++++++")
 
 c = gen.send(None)
 print(c)
+print("+++++++++++++++++++++++++++++++++++++++++++++")
 
 c = gen.send(0.2)
 print("a = " + str(a))
 print("c = " + str(c))
+print("+++++++++++++++++++++++++++++++++++++++++++++")
 
 gen = yieldTest()
 for i in gen:

@@ -19,9 +19,11 @@ gen = generator()
 
 a = next(gen)
 print(a) # 42
+print("+++++++++++++++++++++++++++++++++++++++++++")
 
 # print(100)
 gen.send(100)
+print("+++++++++++++++++++++++++++++++++++++++++++")
 
 # print(1)
 b = gen.send(1)
@@ -37,3 +39,4 @@ gen.send(3)
 c = gen.send(4)
 print(c) # 42
 
+#gen.send(0)
