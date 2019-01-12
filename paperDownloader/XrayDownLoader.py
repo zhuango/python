@@ -51,7 +51,7 @@ while i < count:
                 while retry > 0:
                     print("downloading {}......".format(imageFullName))
                     succe = downLoadImage(imageUrl, imageFullName)
-                    # Do not bother a website to much and sleep for a while.
+                    # Do not bother a website too much and sleep for a while.
                     time.sleep(3)
                     if succe:
                         break
