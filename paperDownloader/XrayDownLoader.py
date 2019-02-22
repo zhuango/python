@@ -24,7 +24,7 @@ imagePath = datasetPath + "images/"
 
 fromGithub = True
 count = 7471
-i = 1201
+i = 1
 imageId = 1
 while i < count:
     url = "https://openi.nlm.nih.gov/retrieve.php?query=Indiana%20University%20Chest%20X-ray%20Collection&m={}&n={}".format(i, min([i + 99, count]))
