@@ -91,5 +91,9 @@ class MyModel(Module):
         print(self.fakeLSTM1)
         print(self.fakeLSTM2)
 
+# Module   : torch.nn.Module
+# FakeLSTM : torch.nn.LSTM
+# float    : torch.nn.Parameter
+# MyModel  : 自定义的模型
 myModel = MyModel()
 myModel.forward()
