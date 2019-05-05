@@ -7,7 +7,7 @@ class Module(object):
 
     def __setattr__(self, name, value):
         if isinstance(value, float):
-            # float类型视作是参数,赋值即自动加入到参数列表中
+            # 参数
             self._parameters[name] = value
         elif isinstance(value, Module):
             # 子模块
