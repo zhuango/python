@@ -25,8 +25,7 @@ class Module(object):
         
     def register_parameter(self, name, param):
         # 为继承Module的子类显示提供注册参数的函数,和__setattr__功能类似
-        if name not in self._parameters:
-            self._parameters[name] = param
+        self._parameters[name] = param
     
     def named_parameters(self, prefix=""):
         for name, p in self._parameters.items():
@@ -91,6 +90,14 @@ class MyModel(Module):
         print(self.fakeLSTM1)
         print(self.fakeLSTM2)
 
+        # 重新注册名为"fakeLSTM0.mlp.para1"的参数
+        self.register_parameter("fakeLSTM0.mlp.para1", 1000000.0)
+
+        print("##################################################")
+        for name, value in self.named_parameters():
+            print(name, value)
+        print("##################################################")
+        
 # Module   : torch.nn.Module
 # FakeLSTM : torch.nn.LSTM
 # float    : torch.nn.Parameter
